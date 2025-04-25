@@ -1,5 +1,13 @@
 "use client";
+import Editor from "../quillEditor";
 
+import dynamic from 'next/dynamic';
+
+// Use dynamic import with no SSR for the Quill component
+const QuillEditor = dynamic(() => import('../quillEditor'), {
+  ssr: false,
+  loading: () => <p>Loading editor...</p>,
+});
 
 const Detail = () => {
     return (
@@ -16,7 +24,7 @@ const Detail = () => {
                 </div>
             </div>
             <div className="flex flex-row justify-center p-5 gap-5">
-                <div></div>
+                <div><QuillEditor /></div>
                 <div></div>
             </div>
         </div>
