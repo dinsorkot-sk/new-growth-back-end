@@ -1,4 +1,6 @@
+
 import Sidebar from "@/components/sidebar";
+import Index from "@/components/courses/index";
 
 export const metadata = {
     title: "Courses",
@@ -6,21 +8,29 @@ export const metadata = {
 };
 
 const Courses = () => {
+    // Dummy data for demonstration
+    const courses = Array(8).fill({
+        title: "การพัฒนาเว็บไซต์สำหรับผู้เริ่มต้น",
+        instructor: "อาจารย์สมชาย",
+        interested: 100,
+        rating: 4,
+        reviews: 25,
+        description: "เรียนรู้การพัฒนาเว็บไซต์ตั้งแต่พื้นฐาน HTML, CSS ไปจนถึง JavaScript และ PHP เหมาะสำหรับผู้เริ่มต้นที่ไม่มีประสบการณ์"
+    });      
+
     return (
-        <div className="flex flex-row h-screen relative">
-            <div className="sticky top-0 h-screen">
+        <div className="flex flex-row">
+            <div className="fixed top-0">
                 <Sidebar />
             </div>
-            <div className="flex flex-col gap-5 w-full p-5 overflow-auto">
-                <div className="bg-white flex items-center p-5 w-full h-15 drop-shadow rounded-2xl">
-                    <div className="text-2xl">จัดการหลักสูตร</div>
+            
+            <div className="ms-56 w-full gap-5 p-5 flex flex-col">
+                {/* Header */}
+                <div className="bg-white flex items-center p-5 w-full drop-shadow rounded-2xl">
+                    <h1 className="text-2xl font-semibold">จัดการหลักสูตร</h1>
                 </div>
 
-                <div className="bg-white flex items-center p-5 w-full h-15 drop-shadow rounded-2xl">
-                    <div>
-                        <input type="text" className='block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#26A65B] focus:border-[#26A65B]' placeholder='ค้นหาหลักสูตร' />
-                    </div>
-                </div>
+                <Index courses={courses} />
             </div>
         </div>
     );

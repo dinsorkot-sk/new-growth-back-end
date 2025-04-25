@@ -8,11 +8,11 @@ export const metadata = {
 const Dashboard = () => {
 
     return (
-        <div className="flex flex-row h-screen relative">
-            <div className="sticky top-0 h-screen">
+        <div className="flex flex-row">
+            <div className="fixed top-0">
                 <Sidebar />
             </div>
-            <div className="w-full p-5 overflow-auto">
+            <div className="ms-56 w-full p-5">
                 <div className="bg-white flex items-center p-5 w-full h-15 drop-shadow rounded-2xl">
                     <div className="text-2xl">Dashboard</div>
                 </div>

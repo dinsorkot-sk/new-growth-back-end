@@ -1,11 +1,10 @@
-
 import "./globals.css";
-import { Inter } from 'next/font/google'
+import { Inter } from 'next/font/google';
 
 const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-inter',
-})
+  variable: '--font-inter', // กำหนดตัวแปรฟอนต์
+});
 
 export const metadata = {
   title: "Create Next App",
@@ -15,9 +14,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={inter.variable}
-      >
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600;700&family=Prompt:wght@100;300;400;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className={inter.variable}>
         {children}
       </body>
     </html>
