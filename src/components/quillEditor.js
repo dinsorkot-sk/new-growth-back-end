@@ -29,7 +29,8 @@ export default function QuillEditor() {
                 [{ 'color': [] }, { 'background': [] }],
                 [{ 'font': [] }],
                 [{ 'align': [] }],
-                ['clean']
+                ['clean'],
+                ['link', 'image']
               ]
             },
           });
