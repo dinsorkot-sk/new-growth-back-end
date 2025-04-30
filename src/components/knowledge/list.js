@@ -1,21 +1,215 @@
-// components/activity/list.js
-"use client";
-import { Search, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
-const ActivityList = ({ activities, onAddNew, onEdit, onDelete }) => {
-    if (!activities) {
-        activities = [];
-    }
+// "use client";
+// import { Search, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+
+// const DocumentList = ({ documents, onAddNew, onEdit, onDelete, onView }) => {
+//     if (!documents) {
+//         documents = [];
+//     }
+
+//     // ฟังก์ชันสำหรับกำหนดสีของ badge ตามประเภทไฟล์
+//     const getFileTypeBadgeColor = (fileType) => {
+//         const type = fileType?.toLowerCase() || '';
+//         if (type.includes('pdf')) return 'bg-red-100 text-red-800';
+//         if (type.includes('doc') || type.includes('word')) return 'bg-blue-100 text-blue-800';
+//         if (type.includes('xls') || type.includes('excel')) return 'bg-green-100 text-green-800';
+//         if (type.includes('ppt') || type.includes('power')) return 'bg-orange-100 text-orange-800';
+//         if (type.includes('jpg') || type.includes('jpeg') || type.includes('png') || type.includes('gif')) return 'bg-purple-100 text-purple-800';
+//         return 'bg-gray-100 text-gray-800';
+//     };
+
+//     return (
+//         <div className="bg-white rounded-md shadow-sm">
+//             <div className="flex justify-between items-center p-4 border-b">
+//                 <h1 className="text-xl font-medium">เอกสาร</h1>
+//                 <button 
+//                     className="bg-green-500 hover:bg-green-600 text-white py-1 px-4 rounded-md transition"
+//                     onClick={onAddNew}
+//                 >
+//                     + เพิ่มเอกสาร
+//                 </button>
+//             </div>
+            
+//             <div className="p-4 border-b">
+//                 <div className="flex flex-col md:flex-row gap-4">
+//                     <div className="flex-1">
+//                         <div className="relative">
+//                             <input 
+//                                 type="text" 
+//                                 placeholder="ค้นหาเอกสาร..." 
+//                                 className="pl-10 pr-3 py-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
+//                             />
+//                             <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+//                         </div>
+//                     </div>
+//                     <div className="w-full md:w-48">
+//                         <select 
+//                             className="pl-3 pr-6 py-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
+//                         >
+//                             <option value="">ทั้งหมด</option>
+//                             <option value="pdf">PDF</option>
+//                             <option value="doc">Word Document</option>
+//                             <option value="xls">Excel</option>
+//                             <option value="other">อื่นๆ</option>
+//                         </select>
+//                     </div>
+//                 </div>
+//             </div>
+            
+//             <div className="p-4">
+//                 {documents.length === 0 ? (
+//                     <div className="text-center py-8 text-gray-500">ไม่พบข้อมูลเอกสาร</div>
+//                 ) : (
+//                     <div className="overflow-x-auto">
+//                         <table className="min-w-full divide-y divide-gray-200">
+//                             <thead className="bg-gray-50">
+//                                 <tr>
+//                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อเอกสาร</th>
+//                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ประเภทไฟล์</th>
+//                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ขนาด</th>
+//                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่อัปโหลด</th>
+//                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+//                                 </tr>
+//                             </thead>
+//                             <tbody className="bg-white divide-y divide-gray-200">
+//                                 {documents.map((document) => (
+//                                     <tr key={document.id} className="hover:bg-gray-50">
+//                                         <td className="px-6 py-4 whitespace-nowrap">
+//                                             <div className="flex items-center">
+//                                                 <FileText className="text-gray-400 mr-2" size={18} />
+//                                                 <span className="text-blue-600 hover:text-blue-800 cursor-pointer" 
+//                                                       onClick={() => onView(document)}>
+//                                                     {document.name}
+//                                                 </span>
+//                                             </div>
+//                                         </td>
+//                                         <td className="px-6 py-4 whitespace-nowrap">
+//                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getFileTypeBadgeColor(document.fileType)}`}>
+//                                                 {document.fileType}
+//                                             </span>
+//                                         </td>
+//                                         <td className="px-6 py-4 whitespace-nowrap">{document.size}</td>
+//                                         <td className="px-6 py-4 whitespace-nowrap">{document.uploadDate}</td>
+//                                         <td className="px-6 py-4 whitespace-nowrap text-right">
+//                                             <a 
+//                                                 href={document.fileUrl} 
+//                                                 download={document.name}
+//                                                 className="text-blue-600 hover:text-blue-800 mr-2 inline-flex items-center"
+//                                                 onClick={(e) => {
+//                                                     if (!document.fileUrl) {
+//                                                         e.preventDefault();
+//                                                         onView(document);
+//                                                     }
+//                                                 }}
+//                                             >
+//                                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+//                                                 </svg>
+//                                                 ดาวน์โหลด
+//                                             </a>
+//                                             <button 
+//                                                 className="text-blue-600 hover:text-blue-800 mr-2"
+//                                                 onClick={() => onEdit(document)}
+//                                             >
+//                                                 แก้ไข
+//                                             </button>
+//                                             <button 
+//                                                 className="text-red-600 hover:text-red-800"
+//                                                 onClick={() => onDelete(document.id)}
+//                                             >
+//                                                 ลบ
+//                                             </button>
+//                                         </td>
+//                                     </tr>
+//                                 ))}
+//                             </tbody>
+//                         </table>
+//                     </div>
+//                 )}
+                
+//                 {documents.length > 0 && (
+//                     <div className="flex justify-between items-center mt-4">
+//                         <div className="text-sm text-gray-500">
+//                             แสดง 1-{Math.min(documents.length, 10)} จาก {documents.length} รายการ
+//                         </div>
+//                         <div className="flex items-center">
+//                             <button className="p-1 rounded-md border mr-1 hover:bg-gray-50">
+//                                 <ChevronLeft size={18} />
+//                             </button>
+//                             <button className="px-3 py-1 rounded-md border mx-1 bg-green-500 text-white">
+//                                 1
+//                             </button>
+//                             <button className="px-3 py-1 rounded-md border mx-1 hover:bg-gray-50">
+//                                 2
+//                             </button>
+//                             <button className="p-1 rounded-md border ml-1 hover:bg-gray-50">
+//                                 <ChevronRight size={18} />
+//                             </button>
+//                         </div>
+//                     </div>
+//                 )}
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default DocumentList;
+
+
+"use client";
+import { useState, useEffect } from "react";
+import { Search, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+
+const DocumentList = ({ documents, onAddNew, onEdit, onDelete, onView }) => {
+    // Convert empty documents to empty array
+    const allDocuments = documents || [];
+    
+    // Add search state
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredDocuments, setFilteredDocuments] = useState(allDocuments);
+    const [fileTypeFilter, setFileTypeFilter] = useState("");
+    
+    // Filter documents when search query or file type filter changes
+    useEffect(() => {
+        const filtered = allDocuments.filter(doc => {
+            const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesFileType = fileTypeFilter === "" || 
+                (doc.fileType && doc.fileType.toLowerCase().includes(fileTypeFilter.toLowerCase()));
+            return matchesSearch && matchesFileType;
+        });
+        setFilteredDocuments(filtered);
+    }, [searchQuery, fileTypeFilter, allDocuments]);
+    
+    // Handler for search input changes
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+    
+    // Handler for file type filter changes
+    const handleFileTypeChange = (e) => {
+        setFileTypeFilter(e.target.value);
+    };
+    
+    // Function for determining badge color based on file type
+    const getFileTypeBadgeColor = (fileType) => {
+        const type = fileType?.toLowerCase() || '';
+        if (type.includes('pdf')) return 'bg-red-100 text-red-800';
+        if (type.includes('doc') || type.includes('word')) return 'bg-blue-100 text-blue-800';
+        if (type.includes('xls') || type.includes('excel')) return 'bg-green-100 text-green-800';
+        if (type.includes('ppt') || type.includes('power')) return 'bg-orange-100 text-orange-800';
+        if (type.includes('jpg') || type.includes('jpeg') || type.includes('png') || type.includes('gif')) return 'bg-purple-100 text-purple-800';
+        return 'bg-gray-100 text-gray-800';
+    };
 
     return (
         <div className="bg-white rounded-md shadow-sm">
             <div className="flex justify-between items-center p-4 border-b">
-                <h1 className="text-xl font-medium">กิจกรรม/อีเวนท์ออนไลน์</h1>
+                <h1 className="text-xl font-medium">คลังความรู้ออนไลน์</h1>
                 <button 
                     className="bg-green-500 hover:bg-green-600 text-white py-1 px-4 rounded-md transition"
                     onClick={onAddNew}
                 >
-                    + เพิ่มกิจกรรม
+                    + เพิ่มเอกสาร
                 </button>
             </div>
             
@@ -25,52 +219,92 @@ const ActivityList = ({ activities, onAddNew, onEdit, onDelete }) => {
                         <div className="relative">
                             <input 
                                 type="text" 
-                                placeholder="ค้นหากิจกรรม..." 
+                                placeholder="ค้นหาเอกสาร..." 
                                 className="pl-10 pr-3 py-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
+                                value={searchQuery}
+                                onChange={handleSearchChange}
                             />
                             <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
                         </div>
                     </div>
                     <div className="w-full md:w-48">
-                        <div className="relative">
-                            <input 
-                                type="date" 
-                                className="pl-10 pr-3 py-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
-                            />
-                            <Calendar className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                        </div>
+                        <select 
+                            className="pl-3 pr-6 py-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
+                            value={fileTypeFilter}
+                            onChange={handleFileTypeChange}
+                        >
+                            <option value="">ทั้งหมด</option>
+                            <option value="pdf">PDF</option>
+                            <option value="doc">Word Document</option>
+                            <option value="xls">Excel</option>
+                            <option value="other">อื่นๆ</option>
+                        </select>
                     </div>
                 </div>
             </div>
             
             <div className="p-4">
-                {activities.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">ไม่พบข้อมูลกิจกรรม</div>
+                {filteredDocuments.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                        {searchQuery || fileTypeFilter ? "ไม่พบเอกสารที่ตรงกับเงื่อนไขการค้นหา" : "ไม่พบข้อมูลเอกสาร"}
+                    </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อกิจกรรม</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อเอกสาร</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ประเภทไฟล์</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ขนาด</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่อัปโหลด</th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {activities.map((activity) => (
-                                    <tr key={activity.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">{activity.title}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">{activity.date}</td>
+                                {filteredDocuments.map((document) => (
+                                    <tr key={document.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <FileText className="text-gray-400 mr-2" size={18} />
+                                                <span className="text-blue-600 hover:text-blue-800 cursor-pointer" 
+                                                      onClick={() => onView(document)}>
+                                                    {document.name}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getFileTypeBadgeColor(document.fileType)}`}>
+                                                {document.fileType}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{document.size}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{document.uploadDate}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
+                                            <a 
+                                                href={document.fileUrl} 
+                                                download={document.name}
+                                                className="text-blue-600 hover:text-blue-800 mr-2 inline-flex items-center"
+                                                onClick={(e) => {
+                                                    if (!document.fileUrl) {
+                                                        e.preventDefault();
+                                                        onView(document);
+                                                    }
+                                                }}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                </svg>
+                                                ดาวน์โหลด
+                                            </a>
                                             <button 
                                                 className="text-blue-600 hover:text-blue-800 mr-2"
-                                                onClick={() => onEdit(activity)}
+                                                onClick={() => onEdit(document)}
                                             >
                                                 แก้ไข
                                             </button>
                                             <button 
                                                 className="text-red-600 hover:text-red-800"
-                                                onClick={() => onDelete(activity.id)}
+                                                onClick={() => onDelete(document.id)}
                                             >
                                                 ลบ
                                             </button>
@@ -82,10 +316,10 @@ const ActivityList = ({ activities, onAddNew, onEdit, onDelete }) => {
                     </div>
                 )}
                 
-                {activities.length > 0 && (
+                {filteredDocuments.length > 0 && (
                     <div className="flex justify-between items-center mt-4">
                         <div className="text-sm text-gray-500">
-                            แสดง 1-{Math.min(activities.length, 10)} จาก {activities.length} รายการ
+                            แสดง 1-{Math.min(filteredDocuments.length, 10)} จาก {filteredDocuments.length} รายการ
                         </div>
                         <div className="flex items-center">
                             <button className="p-1 rounded-md border mr-1 hover:bg-gray-50">
@@ -108,4 +342,4 @@ const ActivityList = ({ activities, onAddNew, onEdit, onDelete }) => {
     );
 };
 
-export default ActivityList;
+export default DocumentList;
