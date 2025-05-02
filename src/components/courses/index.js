@@ -29,3 +29,4 @@ const Index = ({courses}) => {
 }
 
 export default Index;
+
