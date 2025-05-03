@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Cookies from 'js-cookie';
 
 const Sidebar = () => {
     const pathname = usePathname();
@@ -13,8 +14,14 @@ const Sidebar = () => {
         { name: "กระทู้คำถาม", href: "/forum" },
         { name: "คลังรูปภาพ", href: "/gallery" },
         { name: "คลังความรู้ออนไลน์", href: "/knowledge" },
-        { name: "ออกจากระบบ", href: "/logout" },
+        { name: "ออกจากระบบ", href: "/login" },
     ];
+
+    const clearToken = () => {
+        // สร้างคุกกี้ชื่อ auth-token
+        // ในระบบจริงควรมีการตรวจสอบรหัสผ่านก่อนสร้าง token
+        Cookies.remove('auth-token');
+    }
 
     return (
         <div className="sidebar bg-[#1A1F36] text-white w-56 h-screen flex flex-col">
@@ -41,8 +48,9 @@ const Sidebar = () => {
             </ul>
             <ul>
                 <li>
-                    <Link href="/logout">
+                    <Link href="/login">
                         <div
+                            onClick={clearToken}
                             className={`cursor-pointer border-b-1 border-[#2C3352] p-3 mt-auto 
                             ${pathname === "/logout" ? "bg-[#2C3352] border-l-4 border-[#26A65B]" : "hover:bg-[#2C3352] hover:border-l-4 hover:border-[#26A65B]"}
                             `}
