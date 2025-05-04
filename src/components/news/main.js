@@ -103,6 +103,11 @@ const Main = ({ handleViewDetail }) => {
         handleViewDetail({ ...item, mode: "edit" });
     };
 
+    const handleDelete = (item) => {
+        setSelectedNews(item);
+        setDeleteModalOpen(true);
+    };
+
     const confirmDelete = async () => {
         try {
             const token = Cookies.get("auth-token");
@@ -138,6 +143,12 @@ const Main = ({ handleViewDetail }) => {
     // คำนวณเลขหน้า
     const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;
     const totalPages = Math.ceil(pagination.total / pagination.limit);
+
+    const dateFormatter = (p_date) => {
+        const date = new Date(p_date);
+        const formatter = new Intl.DateTimeFormat("en-GB", { day: '2-digit', month: 'long', year: 'numeric' });
+        return formatter.format(date)
+    }
 
     return (
         <div className="p-4">
@@ -209,7 +220,6 @@ const Main = ({ handleViewDetail }) => {
                             <div className="bg-gray-200 h-64 w-full relative">
                                 {item.image?.image_path ? (
                                     <img
-                                        crossorigin='anonymous'
                                         src={`${process.env.NEXT_PUBLIC_IMG}/${item.image.image_path}`}
                                         alt={item.title}
                                         className="w-full h-full object-cover"
@@ -226,22 +236,26 @@ const Main = ({ handleViewDetail }) => {
                                 <h3 className="font-bold text-2xl mb-2">{item.title}</h3>
 
                                 <div className="flex justify-between items-center mb-3">
-                                    <div className="text-gray-500">{item.publishDate}</div>
+                                    <div className="text-gray-500">{dateFormatter(item.published_date)}</div>
                                     <div className="text-gray-500">{item.viewCount} คนอ่าน</div>
                                 </div>
 
-                                <p className="text-gray-700 mb-4">{item.shortDescription}</p>
+                                <p className="text-gray-700 mb-4">{item.short_description}</p>
 
                                 <div className="flex justify-between items-center">
-                                    <button
-                                        className="bg-green-100 text-green-600 px-4 py-1 rounded-md text-sm"
-                                    >
-                                        {item.category}
-                                    </button>
-
+                                    <div className="flex flex-row">
+                                        {item?.tagAssignments.map((data) => (
+                                            <button
+                                                key={data.id}
+                                                className="bg-green-100 text-green-600 px-4 py-1 rounded-md text-sm mr-2 mb-2"
+                                            >
+                                                {data?.tag?.name}
+                                            </button>
+                                        ))}
+                                    </div>
                                     <div className="flex space-x-2">
                                         <button
-                                            className="w-8 h-8 flex items-center justify-center rounded-md"
+                                            className="w-auto h-8 flex items-center justify-center rounded-md"
                                         >
                                             <span className="text-green-500 underline">อ่านแล้ว</span>
                                         </button>
@@ -250,19 +264,19 @@ const Main = ({ handleViewDetail }) => {
 
                                 <div className="flex space-x-2 mt-4">
                                     <button
-                                        className="w-8 h-8 rounded-md bg-blue-500 px-2 flex items-center justify-center text-white text-sm"
+                                        className="w-8 h-8 rounded-md cursor-pointer bg-blue-500 hover:bg-blue-300 px-2 flex items-center justify-center text-white text-sm"
                                         onClick={() => handleView(item)}
                                     >
                                         ดู
                                     </button>
                                     <button
-                                        className="w-8 h-8 rounded-md bg-yellow-400 px-2 flex items-center justify-center text-white text-sm"
+                                        className="w-8 h-8 rounded-md cursor-pointer bg-yellow-400 hover:bg-yellow-300 px-2 flex items-center justify-center text-white text-sm"
                                         onClick={() => handleEdit(item)}
                                     >
                                         แก้ไข
                                     </button>
                                     <button
-                                        className="w-8 h-8 rounded-md bg-red-500 px-2 flex items-center justify-center text-white text-sm"
+                                        className="w-8 h-8 rounded-md cursor-pointer bg-red-500 hover:bg-red-400 px-2 flex items-center justify-center text-white text-sm"
                                         onClick={() => handleDelete(item)}
                                     >
                                         ลบ

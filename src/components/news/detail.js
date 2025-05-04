@@ -19,7 +19,8 @@ const Detail = ({ news, onClose }) => {
         content: news?.content || "",
         category: news?.category || "กิจกรรม",
         publishDate: news?.publishDate || new Date().toISOString().split('T')[0],
-        status: news?.status || "show"
+        status: news?.status || "show",
+        shortDescription: news?.short_description || "",
     });
 
     // เมื่อมีการเปลี่ยนโหมดหรือข้อมูลข่าว ให้อัปเดต state
@@ -31,7 +32,8 @@ const Detail = ({ news, onClose }) => {
                 content: news?.content || "",
                 category: news?.category || "กิจกรรม",
                 publishDate: news?.publishDate || new Date().toISOString().split('T')[0],
-                status: news?.status || "show"
+                status: news?.status || "show",
+                shortDescription: news?.short_description || "",
             });
 
             // เช็คเงื่อนไขเพื่อกำหนดโหมด:
@@ -68,6 +70,7 @@ const Detail = ({ news, onClose }) => {
         formPayload.append('published_date', new Date(formData.publishDate).toISOString());
         formPayload.append('tag', JSON.stringify([formData.category]));
         formPayload.append('status', formData.status);
+        formPayload.append('short_description', formData.shortDescription);
 
         if (imageFile) {
             formPayload.append('image', imageFile);
@@ -190,6 +193,17 @@ const Detail = ({ news, onClose }) => {
                                     value={formData.publishDate}
                                     onChange={handleFormChange}
                                 />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-gray-700 mb-2">คำอธิบาย</label>
+                                <textarea
+                                    name="shortDescription"
+                                    className="w-full p-2 border border-gray-300 rounded-md h-20"
+                                    value={formData.shortDescription}
+                                    onChange={handleFormChange}
+                                    placeholder="ระบุคำอธิบายสั้น"
+                                ></textarea>
                             </div>
 
                             <div>
