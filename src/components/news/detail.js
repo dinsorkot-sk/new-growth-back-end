@@ -1,249 +1,48 @@
-
-// import { useState, useEffect } from "react";
-
-// const Detail = ({ news, onClose }) => {
-//     const [mode, setMode] = useState(news?.mode === 'edit' ? 'edit' : 'view');
-//     const [formData, setFormData] = useState({
-//         title: news?.title || "",
-//         content: news?.content || "",
-//         category: news?.category || "กิจกรรม",
-//         publishDate: news?.publishDate || new Date().toISOString().split('T')[0],
-//         shortDescription: news?.shortDescription || ""
-//     });
-    
-//     // เมื่อมีการเปลี่ยนโหมดหรือข้อมูลข่าว ให้อัปเดต state
-//     useEffect(() => {
-//         if (news) {
-//             setFormData({
-//                 title: news.title || "",
-//                 content: news.content || "",
-//                 category: news.category || "กิจกรรม",
-//                 publishDate: news.publishDate || new Date().toISOString().split('T')[0],
-//                 shortDescription: news.shortDescription || ""
-//             });
-//             setMode(news.mode === 'edit' ? 'edit' : 'view');
-//         } else {
-//             // กรณีสร้างใหม่
-//             setMode('edit');
-//             setFormData({
-//                 title: "",
-//                 content: "",
-//                 category: "กิจกรรม",
-//                 publishDate: new Date().toISOString().split('T')[0],
-//                 shortDescription: ""
-//             });
-//         }
-//     }, [news]);
-    
-//     const handleFormChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData(prev => ({
-//             ...prev,
-//             [name]: value
-//         }));
-//     };
-    
-//     const handleSave = () => {
-//         // บันทึกข้อมูลลงฐานข้อมูล
-//         console.log("บันทึกข้อมูล:", {
-//             ...formData,
-//             id: news?.id || `news_${Date.now()}`, // สร้าง ID ใหม่ถ้าเป็นการสร้างข่าวใหม่
-//             viewCount: news?.viewCount || 0
-//         });
-        
-//         onClose(); // กลับไปหน้ารายการ
-//     };
-    
-//     const handleEdit = () => {
-//         setMode('edit'); // เปลี่ยนเป็นโหมดแก้ไข
-//     };
-    
-//     // รายการหมวดหมู่สำหรับ dropdown
-//     const categories = [
-//         { value: "กิจกรรม", label: "กิจกรรม" },
-//         { value: "การศึกษา", label: "การศึกษา" },
-//         { value: "สัมมนา", label: "สัมมนา" },
-//         { value: "ข่าวสาร", label: "ข่าวสาร" }
-//     ];
-    
-//     return (
-//         <div className="">
-//             <div className="bg-white flex items-center p-5 w-full drop-shadow rounded-2xl my-3">
-//                 <h1 className="text-2xl font-semibold">
-//                     {mode === 'edit' ? 
-//                         (news?.id ? 'แก้ไขข่าวสาร & กิจกรรม' : 'สร้างข่าวสาร & กิจกรรมใหม่') : 
-//                         'รายละเอียดข่าวสาร & กิจกรรม'}
-//                 </h1>
-//             </div>
-            
-//             <div className="bg-white drop-shadow rounded-2xl px-10 py-10">
-//                 <div className="max-w-4xl mx-auto">
-//                     {/* ส่วนหัวข้อและปุ่มบันทึก/แก้ไข */}
-//                     <div className="flex justify-between items-center mb-6">
-//                         <div className="flex flex-col">
-//                             {mode === 'edit' ? (
-//                                 <input
-//                                     type="text"
-//                                     name="title"
-//                                     className="text-2xl font-bold border-b border-gray-300 focus:outline-none focus:border-blue-500 pb-1 w-full"
-//                                     value={formData.title}
-//                                     onChange={handleFormChange}
-//                                     placeholder="ระบุชื่อหัวข้อข่าว"
-//                                 />
-//                             ) : (
-//                                 <h2 className="text-2xl font-bold">{formData.title}</h2>
-//                             )}
-//                             {mode === 'view' && (
-//                                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-//                                     <span>วันที่: {formData.publishDate}</span>
-//                                     <span>หมวดหมู่: {formData.category}</span>
-//                                     <span>{news?.viewCount || 0} คนอ่าน</span>
-//                                 </div>
-//                             )}
-//                         </div>
-                        
-//                         <button 
-//                             className={`px-6 py-2 rounded-md text-white ${mode === 'edit' ? 'bg-green-500' : 'bg-blue-600'}`}
-//                             onClick={mode === 'edit' ? handleSave : handleEdit}
-//                         >
-//                             {mode === 'edit' ? 'บันทึก' : 'แก้ไข'}
-//                         </button>
-//                     </div>
-                    
-//                     {/* ส่วนรูปภาพ (ถ้ามี) */}
-//                     {mode === 'view' && news?.imageUrl && (
-//                         <div className="mb-6">
-//                             <img 
-//                                 src={news.imageUrl} 
-//                                 alt={formData.title} 
-//                                 className="w-full h-auto max-h-96 object-contain rounded-lg"
-//                             />
-//                         </div>
-//                     )}
-                    
-//                     {/* ส่วนฟอร์มแก้ไข */}
-//                     {mode === 'edit' && (
-//                         <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-//                             <div>
-//                                 <label className="block text-gray-700 mb-2">หมวดหมู่</label>
-//                                 <select
-//                                     name="category"
-//                                     className="w-full p-2 border border-gray-300 rounded-md"
-//                                     value={formData.category}
-//                                     onChange={handleFormChange}
-//                                 >
-//                                     {categories.map(cat => (
-//                                         <option key={cat.value} value={cat.value}>{cat.label}</option>
-//                                     ))}
-//                                 </select>
-//                             </div>
-                            
-//                             <div>
-//                                 <label className="block text-gray-700 mb-2">วันที่เผยแพร่</label>
-//                                 <input
-//                                     type="date"
-//                                     name="publishDate"
-//                                     className="w-full p-2 border border-gray-300 rounded-md"
-//                                     value={formData.publishDate}
-//                                     onChange={handleFormChange}
-//                                 />
-//                             </div>
-                            
-//                             <div className="md:col-span-2">
-//                                 <label className="block text-gray-700 mb-2">คำอธิบายสั้น</label>
-//                                 <textarea
-//                                     name="shortDescription"
-//                                     className="w-full p-2 border border-gray-300 rounded-md h-20"
-//                                     value={formData.shortDescription}
-//                                     onChange={handleFormChange}
-//                                     placeholder="ระบุคำอธิบายสั้นสำหรับข่าวนี้"
-//                                 ></textarea>
-//                             </div>
-//                         </div>
-//                     )}
-                    
-//                     {/* ส่วนคำอธิบายสั้น (โหมดดู) */}
-//                     {mode === 'view' && (
-//                         <div className="mb-6">
-//                             <p className="text-lg text-gray-700">{formData.shortDescription}</p>
-//                         </div>
-//                     )}
-                    
-//                     {/* ส่วนเนื้อหาหลัก */}
-//                     <div className="mt-4">
-//                         <h3 className="font-semibold mb-3">{mode === 'edit' ? 'เนื้อหา' : 'รายละเอียด'}</h3>
-                        
-//                         {mode === 'edit' ? (
-//                             <div className="border rounded-lg">
-//                                 <textarea
-//                                     name="shortDescription"
-//                                     className="w-full min-h-[400px] p-4 resize-none rounded-lg focus:outline-none"
-//                                     value={formData.shortDescription}
-//                                     onChange={handleFormChange}
-//                                     placeholder="เขียนรายละเอียดเนื้อหาข่าวหรือกิจกรรม..."
-//                                 ></textarea>
-//                             </div>
-//                         ) : (
-//                             <div className="prose max-w-none bg-gray-50 p-6 rounded-lg">
-//                                 {formData.content ? (
-//                                     <div dangerouslySetInnerHTML={{ __html: formData.shortDescription }} />
-//                                 ) : (
-//                                     <p className="text-gray-500 italic">ไม่มีเนื้อหา</p>
-//                                 )}
-//                             </div>
-//                         )}
-//                     </div>
-//                 </div>
-//             </div>
-            
-//             <div className="mt-6">
-//                 <button 
-//                     className="text-blue-500 underline flex items-center"
-//                     onClick={onClose}
-//                 >
-//                     <span className="mr-1">&lt;</span> กลับไปหน้ารายการ
-//                 </button>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default Detail;
+"use client";
 
 import { useState, useEffect } from "react";
+import dynamic from 'next/dynamic';
+import Cookies from 'js-cookie';
+import axios from 'axios'; // เพิ่มการนำเข้า axios
+
+const QuillEditor = dynamic(() => import('../quillEditor'), {
+    ssr: false,
+    loading: () => <p>Loading editor...</p>,
+});
 
 const Detail = ({ news, onClose }) => {
     // ตรวจสอบโหมดโดยตรง - ถ้ามี news.mode เป็น 'edit' หรือไม่มี news.id (สร้างใหม่) ให้เป็นโหมดแก้ไข
     const [mode, setMode] = useState(news?.mode === 'edit' || !news?.id ? 'edit' : 'view');
+    const [imageFile, setImageFile] = useState(null);
     const [formData, setFormData] = useState({
         title: news?.title || "",
         content: news?.content || "",
         category: news?.category || "กิจกรรม",
         publishDate: news?.publishDate || new Date().toISOString().split('T')[0],
-        shortDescription: news?.shortDescription || ""
+        status: news?.status || "show"
     });
-    
+
     // เมื่อมีการเปลี่ยนโหมดหรือข้อมูลข่าว ให้อัปเดต state
     useEffect(() => {
         if (news) {
             // อัปเดตฟอร์มข้อมูล
             setFormData({
-                title: news.title || "",
-                content: news.content || "",
-                category: news.category || "กิจกรรม",
-                publishDate: news.publishDate || new Date().toISOString().split('T')[0],
-                shortDescription: news.shortDescription || ""
+                title: news?.title || "",
+                content: news?.content || "",
+                category: news?.category || "กิจกรรม",
+                publishDate: news?.publishDate || new Date().toISOString().split('T')[0],
+                status: news?.status || "show"
             });
-            
+
             // เช็คเงื่อนไขเพื่อกำหนดโหมด:
             // 1. ถ้า news.mode เป็น 'edit' หรือ
             // 2. ไม่มี news.id (หมายถึงเป็นการสร้างใหม่)
             setMode(news.mode === 'edit' || !news.id ? 'edit' : 'view');
-            
+
             console.log("Mode set to:", news.mode === 'edit' || !news.id ? 'edit' : 'view');
         }
     }, [news]);
-    
+
     const handleFormChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -251,22 +50,57 @@ const Detail = ({ news, onClose }) => {
             [name]: value
         }));
     };
-    
-    const handleSave = () => {
-        // บันทึกข้อมูลลงฐานข้อมูล
-        console.log("บันทึกข้อมูล:", {
-            ...formData,
-            id: news?.id || `news_${Date.now()}`, // สร้าง ID ใหม่ถ้าเป็นการสร้างข่าวใหม่
-            viewCount: news?.viewCount || 0
-        });
-        
-        onClose(); // กลับไปหน้ารายการ
+
+    const handleContentChange = (content) => {
+        setFormData(prev => ({ ...prev, content }));
     };
-    
+
+    const handleSave = async () => {
+        const token = Cookies.get('auth-token');
+        if (!token) {
+            alert('กรุณาเข้าสู่ระบบอีกครั้ง');
+            return;
+        }
+
+        const formPayload = new FormData();
+        formPayload.append('title', formData.title);
+        formPayload.append('content', formData.content);
+        formPayload.append('published_date', new Date(formData.publishDate).toISOString());
+        formPayload.append('tag', JSON.stringify([formData.category]));
+        formPayload.append('status', formData.status);
+
+        if (imageFile) {
+            formPayload.append('image', imageFile);
+        }
+
+        try {
+            const url = news?.id
+                ? `${process.env.NEXT_PUBLIC_API}/news/${news.id}`
+                : `${process.env.NEXT_PUBLIC_API}/news`;
+
+            const method = news?.id ? 'put' : 'post';
+
+            await axios({
+                method,
+                url,
+                data: formPayload,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            onClose();
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการบันทึก:', error);
+            alert('บันทึกข้อมูลไม่สำเร็จ');
+        }
+    };
+
     const handleEdit = () => {
         setMode('edit'); // เปลี่ยนเป็นโหมดแก้ไข
     };
-    
+
     // รายการหมวดหมู่สำหรับ dropdown
     const categories = [
         { value: "กิจกรรม", label: "กิจกรรม" },
@@ -274,17 +108,17 @@ const Detail = ({ news, onClose }) => {
         { value: "สัมมนา", label: "สัมมนา" },
         { value: "ข่าวสาร", label: "ข่าวสาร" }
     ];
-    
+
     return (
         <div className="">
             <div className="bg-white flex items-center p-5 w-full drop-shadow rounded-2xl my-3">
                 <h1 className="text-2xl font-semibold">
-                    {mode === 'edit' ? 
-                        (news?.id ? 'แก้ไขข่าวสาร & กิจกรรม' : 'สร้างข่าวสาร & กิจกรรมใหม่') : 
+                    {mode === 'edit' ?
+                        (news?.id ? 'แก้ไขข่าวสาร & กิจกรรม' : 'สร้างข่าวสาร & กิจกรรมใหม่') :
                         'รายละเอียดข่าวสาร & กิจกรรม'}
                 </h1>
             </div>
-            
+
             <div className="bg-white drop-shadow rounded-2xl px-10 py-10">
                 <div className="max-w-4xl mx-auto">
                     {/* ส่วนหัวข้อและปุ่มบันทึก/แก้ไข */}
@@ -310,26 +144,26 @@ const Detail = ({ news, onClose }) => {
                                 </div>
                             )}
                         </div>
-                        
-                        <button 
+
+                        <button
                             className={`px-6 py-2 rounded-md text-white ${mode === 'edit' ? 'bg-green-500' : 'bg-blue-600'}`}
                             onClick={mode === 'edit' ? handleSave : handleEdit}
                         >
                             {mode === 'edit' ? 'บันทึก' : 'แก้ไข'}
                         </button>
                     </div>
-                    
+
                     {/* ส่วนรูปภาพ (ถ้ามี) */}
                     {mode === 'view' && news?.imageUrl && (
                         <div className="mb-6">
-                            <img 
-                                src={news.imageUrl} 
-                                alt={formData.title} 
+                            <img
+                                src={news.imageUrl}
+                                alt={formData.title}
                                 className="w-full h-auto max-h-96 object-contain rounded-lg"
                             />
                         </div>
                     )}
-                    
+
                     {/* ส่วนฟอร์มแก้ไข */}
                     {mode === 'edit' && (
                         <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -346,7 +180,7 @@ const Detail = ({ news, onClose }) => {
                                     ))}
                                 </select>
                             </div>
-                            
+
                             <div>
                                 <label className="block text-gray-700 mb-2">วันที่เผยแพร่</label>
                                 <input
@@ -357,57 +191,67 @@ const Detail = ({ news, onClose }) => {
                                     onChange={handleFormChange}
                                 />
                             </div>
-                            
-                            <div className="md:col-span-2">
-                                <label className="block text-gray-700 mb-2">คำอธิบายสั้น</label>
-                                <textarea
-                                    name="shortDescription"
-                                    className="w-full p-2 border border-gray-300 rounded-md h-20"
-                                    value={formData.shortDescription}
+
+                            <div>
+                                <label className="block text-gray-700 mb-2">สถานะ</label>
+                                <select
+                                    name="status"
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                    value={formData.status}
                                     onChange={handleFormChange}
-                                    placeholder="ระบุคำอธิบายสั้นสำหรับข่าวนี้"
-                                ></textarea>
+                                >
+                                    <option value="show">แสดง</option>
+                                    <option value="hide">ซ่อน</option>
+                                </select>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-gray-700 mb-2">อัพโหลดรูปภาพ</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setImageFile(e.target.files[0])}
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                />
                             </div>
                         </div>
                     )}
-                    
+
                     {/* ส่วนคำอธิบายสั้น (โหมดดู) */}
                     {mode === 'view' && (
                         <div className="mb-6">
                             <p className="text-lg text-gray-700">{formData.shortDescription}</p>
                         </div>
                     )}
-                    
+
                     {/* ส่วนเนื้อหาหลัก */}
                     <div className="mt-4">
                         <h3 className="font-semibold mb-3">{mode === 'edit' ? 'เนื้อหา' : 'รายละเอียด'}</h3>
-                        
                         {mode === 'edit' ? (
-                            <div className="border rounded-lg">
-                                <textarea
-                                    name="content" // แก้จาก shortDescription เป็น content
-                                    className="w-full min-h-[400px] p-4 resize-none rounded-lg focus:outline-none"
-                                    value={formData.content} // แก้จาก shortDescription เป็น content
-                                    onChange={handleFormChange}
-                                    placeholder="เขียนรายละเอียดเนื้อหาข่าวหรือกิจกรรม..."
-                                ></textarea>
+                            <div>
+                                <QuillEditor
+                                    value={formData.content}
+                                    onChange={handleContentChange}
+                                    id="additional-info-editor"
+                                />
                             </div>
                         ) : (
                             <div className="prose max-w-none bg-gray-50 p-6 rounded-lg">
                                 {formData.content ? (
-                                    <div dangerouslySetInnerHTML={{ __html: formData.content }} /> // แก้จาก shortDescription เป็น content
+                                    <div dangerouslySetInnerHTML={{ __html: formData.content }} />
                                 ) : (
                                     <p className="text-gray-500 italic">ไม่มีเนื้อหา</p>
                                 )}
                             </div>
                         )}
                     </div>
+
                 </div>
             </div>
-            
+
             <div className="mt-6">
-                <button 
-                    className="text-blue-500 underline flex items-center"
+                <button
+                    className="text-blue-500 underline flex items-center cursor-pointer"
                     onClick={onClose}
                 >
                     <span className="mr-1">&lt;</span> กลับไปหน้ารายการ
