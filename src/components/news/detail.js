@@ -217,7 +217,7 @@ const Detail = ({ news, onClose }) => {
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemoveCategory(index)}
-                                                className="text-red-500 hover:text-red-700"
+                                                className="text-red-500 hover:text-red-700 cursor-pointer"
                                             >
                                                 ×
                                             </button>

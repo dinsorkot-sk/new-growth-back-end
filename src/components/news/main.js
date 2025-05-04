@@ -154,7 +154,7 @@ const Main = ({ handleViewDetail }) => {
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                     >
-                        <option value="" hidden>เลือกหมวดหมู่</option>
+                        <option value="">เลือกหมวดหมู่</option>
                         {categories.map(cat => (
                             <option key={cat.id} value={cat.name}>{cat.name}</option>
                         ))}
@@ -164,7 +164,7 @@ const Main = ({ handleViewDetail }) => {
                 {/* ส่วนของปุ่มค้นหาและสร้างข่าวใหม่ */}
                 <div className="flex justify-center gap-4">
                     <button
-                        className="bg-green-500 text-white rounded-md px-6 py-2"
+                        className="bg-green-500 hover:bg-green-400 cursor-pointer text-white rounded-md px-6 py-2"
                         onClick={handleSearch}
                     >
                         ค้นหา
