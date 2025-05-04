@@ -9,48 +9,13 @@ const Main = ({ handleViewDetail }) => {
     const [category, setCategory] = useState("");
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedNews, setSelectedNews] = useState(null);
+    const [categories, setCategories] = useState([]);
     const [pagination, setPagination] = useState({
         offset: 0,
         limit: 6,
         total: 0,
     });
 
-    // กรองและจัดเรียงข่าว
-    const getFilteredNews = () => {
-        let result = [...news];
-
-        // กรองตามข้อความค้นหา
-        if (searchQuery) {
-            result = result.filter(item =>
-                item.title.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        }
-
-        // กรองตามหมวดหมู่
-        if (category) {
-            result = result.filter(item => item.category === category);
-        }
-
-        // จัดเรียง
-        if (sortOrder === "newest") {
-            result.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
-        } else if (sortOrder === "oldest") {
-            result.sort((a, b) => new Date(a.publishDate) - new Date(b.publishDate));
-        }
-
-        return result;
-    };
-
-    const filteredNews = getFilteredNews();
-
-    // รายการหมวดหมู่สำหรับ dropdown
-    const categories = [
-        { value: "", label: "หมวดหมู่" },
-        { value: "กิจกรรม", label: "กิจกรรม" },
-        { value: "การศึกษา", label: "การศึกษา" },
-        { value: "สัมมนา", label: "สัมมนา" },
-        { value: "ข่าวสาร", label: "ข่าวสาร" }
-    ];
 
     const fetchNews = async () => {
         try {
@@ -76,6 +41,7 @@ const Main = ({ handleViewDetail }) => {
                 ...prev,
                 total: response.data.pagination.totalCount,
             }));
+            setCategories(response.data.tag)
         } catch (error) {
             console.error("Error fetching news:", error);
             alert("ดึงข้อมูลไม่สำเร็จ");
@@ -188,8 +154,9 @@ const Main = ({ handleViewDetail }) => {
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                     >
+                        <option value="" hidden>เลือกหมวดหมู่</option>
                         {categories.map(cat => (
-                            <option key={cat.value} value={cat.value}>{cat.label}</option>
+                            <option key={cat.id} value={cat.name}>{cat.name}</option>
                         ))}
                     </select>
                 </div>
@@ -213,8 +180,8 @@ const Main = ({ handleViewDetail }) => {
 
             {/* ส่วนแสดงรายการข่าว */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredNews.length > 0 ? (
-                    filteredNews.map((item) => (
+                {news.length > 0 ? (
+                    news.map((item) => (
                         <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                             {/* ส่วนภาพ */}
                             <div className="bg-gray-200 h-64 w-full relative">

@@ -159,7 +159,7 @@ const Detail = ({ news, onClose }) => {
                             {mode === 'view' && (
                                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                                     <span>วันที่: {dateFormatter(formData.publishDate)}</span>
-                                    <span>หมวดหมู่: {formData.category}</span>
+                                    <span>หมวดหมู่: {formData.categories.join(', ')}</span> 
                                     <span>{news?.viewCount || 0} คนอ่าน</span>
                                 </div>
                             )}
