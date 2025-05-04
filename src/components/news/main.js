@@ -237,7 +237,7 @@ const Main = ({ handleViewDetail }) => {
 
                                 <div className="flex justify-between items-center mb-3">
                                     <div className="text-gray-500">{dateFormatter(item.published_date)}</div>
-                                    <div className="text-gray-500">{item.viewCount} คนอ่าน</div>
+                                    <div className="text-gray-500">{item.view_count} คนอ่าน</div>
                                 </div>
 
                                 <p className="text-gray-700 mb-4">{item.short_description}</p>
