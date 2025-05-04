@@ -17,20 +17,22 @@ const Detail = ({ news, onClose }) => {
     const [formData, setFormData] = useState({
         title: news?.title || "",
         content: news?.content || "",
-        category: news?.category || "กิจกรรม",
+        categories: [],
         publishDate: news?.publishDate || new Date().toISOString().split('T')[0],
         status: news?.status || "show",
         shortDescription: news?.short_description || "",
     });
+    const [newCategory, setNewCategory] = useState('');
 
     // เมื่อมีการเปลี่ยนโหมดหรือข้อมูลข่าว ให้อัปเดต state
     useEffect(() => {
         if (news) {
+            const initialCategories = news.tagAssignments?.map(t => t.tag.name) || [];
             // อัปเดตฟอร์มข้อมูล
             setFormData({
                 title: news?.title || "",
                 content: news?.content || "",
-                category: news?.category || "กิจกรรม",
+                categories: initialCategories || [],
                 publishDate: news?.publishDate || new Date().toISOString().split('T')[0],
                 status: news?.status || "show",
                 shortDescription: news?.short_description || "",
@@ -68,7 +70,7 @@ const Detail = ({ news, onClose }) => {
         formPayload.append('title', formData.title);
         formPayload.append('content', formData.content);
         formPayload.append('published_date', new Date(formData.publishDate).toISOString());
-        formPayload.append('tag', JSON.stringify([formData.category]));
+        formPayload.append('tag', JSON.stringify(formData.categories))
         formPayload.append('status', formData.status);
         formPayload.append('short_description', formData.shortDescription);
 
@@ -104,13 +106,28 @@ const Detail = ({ news, onClose }) => {
         setMode('edit'); // เปลี่ยนเป็นโหมดแก้ไข
     };
 
-    // รายการหมวดหมู่สำหรับ dropdown
-    const categories = [
-        { value: "กิจกรรม", label: "กิจกรรม" },
-        { value: "การศึกษา", label: "การศึกษา" },
-        { value: "สัมมนา", label: "สัมมนา" },
-        { value: "ข่าวสาร", label: "ข่าวสาร" }
-    ];
+    const handleAddCategory = () => {
+        if (newCategory.trim() && !formData.categories.includes(newCategory.trim())) {
+          setFormData(prev => ({
+            ...prev,
+            categories: [...prev.categories, newCategory.trim()]
+          }));
+          setNewCategory('');
+        }
+      };
+      
+      // ฟังก์ชันลบหมวดหมู่
+      const handleRemoveCategory = (index) => {
+        setFormData(prev => ({
+          ...prev,
+          categories: prev.categories.filter((_, i) => i !== index)
+        }));
+      };
+    const dateFormatter = (p_date) => {
+        const date = new Date(p_date);
+        const formatter = new Intl.DateTimeFormat("en-GB", { day: '2-digit', month: 'long', year: 'numeric' });
+        return formatter.format(date)
+    }
 
     return (
         <div className="">
@@ -141,7 +158,7 @@ const Detail = ({ news, onClose }) => {
                             )}
                             {mode === 'view' && (
                                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                                    <span>วันที่: {formData.publishDate}</span>
+                                    <span>วันที่: {dateFormatter(formData.publishDate)}</span>
                                     <span>หมวดหมู่: {formData.category}</span>
                                     <span>{news?.viewCount || 0} คนอ่าน</span>
                                 </div>
@@ -157,12 +174,12 @@ const Detail = ({ news, onClose }) => {
                     </div>
 
                     {/* ส่วนรูปภาพ (ถ้ามี) */}
-                    {mode === 'view' && news?.imageUrl && (
+                    {mode === 'view' && news?.image?.image_path && (
                         <div className="mb-6">
                             <img
-                                src={news.imageUrl}
+                                src={`${process.env.NEXT_PUBLIC_IMG}/${news.image.image_path}`}
                                 alt={formData.title}
-                                className="w-full h-auto max-h-96 object-contain rounded-lg"
+                                className="w-full h-auto max-h-96 object-contain border rounded-lg"
                             />
                         </div>
                     )}
@@ -172,16 +189,41 @@ const Detail = ({ news, onClose }) => {
                         <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-gray-700 mb-2">หมวดหมู่</label>
-                                <select
-                                    name="category"
-                                    className="w-full p-2 border border-gray-300 rounded-md"
-                                    value={formData.category}
-                                    onChange={handleFormChange}
-                                >
-                                    {categories.map(cat => (
-                                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                <div className="flex gap-2 mb-2">
+                                    <input
+                                        type="text"
+                                        placeholder="พิมพ์หมวดหมู่ใหม่"
+                                        className="flex-1 p-2 border border-gray-300 rounded-md"
+                                        value={newCategory}
+                                        onChange={(e) => setNewCategory(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleAddCategory}
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                                    >
+                                        เพิ่ม
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {formData.categories.map((category, index) => (
+                                        <div
+                                            key={index}
+                                            className="bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2"
+                                        >
+                                            <span>{category}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveCategory(index)}
+                                                className="text-red-500 hover:text-red-700"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
                                     ))}
-                                </select>
+                                </div>
                             </div>
 
                             <div>
@@ -234,6 +276,7 @@ const Detail = ({ news, onClose }) => {
                     {/* ส่วนคำอธิบายสั้น (โหมดดู) */}
                     {mode === 'view' && (
                         <div className="mb-6">
+                            <h3 className="font-semibold mb-3">คำอธิบาย</h3>
                             <p className="text-lg text-gray-700">{formData.shortDescription}</p>
                         </div>
                     )}

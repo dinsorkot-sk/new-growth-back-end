@@ -276,6 +276,8 @@ const Main = ({ handleViewDetail }) => {
                                         แก้ไข
                                     </button>
                                     <button
+                                        data-modal-target="default-modal" 
+                                        data-modal-toggle="default-modal"
                                         className="w-8 h-8 rounded-md cursor-pointer bg-red-500 hover:bg-red-400 px-2 flex items-center justify-center text-white text-sm"
                                         onClick={() => handleDelete(item)}
                                     >
@@ -329,7 +331,7 @@ const Main = ({ handleViewDetail }) => {
 
             {/* Modal ยืนยันการลบ */}
             {deleteModalOpen && selectedNews && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-gray-500/75 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg w-full max-w-md p-6">
                         <div className="text-center mb-6">
                             <h2 className="text-2xl font-bold mb-4">ยืนยันการลบ</h2>
@@ -344,13 +346,13 @@ const Main = ({ handleViewDetail }) => {
                         <div className="flex justify-center space-x-3">
                             <button
                                 onClick={() => setDeleteModalOpen(false)}
-                                className="border border-gray-300 text-gray-700 px-6 py-2 rounded-md"
+                                className="border border-gray-300 cursor-pointer text-gray-700 px-6 py-2 rounded-md"
                             >
                                 ยกเลิก
                             </button>
                             <button
                                 onClick={confirmDelete}
-                                className="bg-red-500 text-white px-6 py-2 rounded-md"
+                                className="bg-red-500 hover:bg-red-400 cursor-pointer text-white px-6 py-2 rounded-md"
                             >
                                 ลบ
                             </button>
