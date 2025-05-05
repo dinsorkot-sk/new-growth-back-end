@@ -6,6 +6,9 @@ import dynamic from 'next/dynamic';
 import axios from "axios";
 import Cookies from 'js-cookie';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+
 const QuillEditor = dynamic(() => import('../quillEditor'), {
   ssr: false,
   loading: () => <p>Loading editor...</p>,
@@ -56,7 +59,7 @@ const renderStars = (rating) => {
   );
 };
 
-const CourseForm = ({ courseId, onClose }) => {
+const Detail = ({ courseId, onClose }) => {
   const router = useRouter();
   const [mode, setMode] = useState(courseId ? 'view' : 'create');
   const [course, setCourse] = useState(null);
@@ -64,6 +67,9 @@ const CourseForm = ({ courseId, onClose }) => {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const initialFormState = {
     name: "",
@@ -79,37 +85,37 @@ const CourseForm = ({ courseId, onClose }) => {
 
   // ดึงข้อมูลหลักสูตร (เมื่อมี courseId)
   useEffect(() => {
-    const fetchCourse = async () => {
-      if (!courseId || courseId == " ") {
-        setMode('create')
-        setForm(initialFormState);
-        return;
-      }
-
-      try {
-        const { data } = await axios.get(
-          `${process.env.NEXT_PUBLIC_API}/course/${courseId}`
-        );
-
-        setCourse(data);
-        setForm({
-          name: data.name || "",
-          description: data.description || "",
-          sub_description: data.sub_description || "",
-          additional_info: data.additional_info || "",
-          industries: data.industries?.map(i => i.name) || [],
-          instructor: data.instructor || "",
-          publishDate: data.publish_date?.split('T')[0] || new Date().toISOString().split('T')[0],
-        });
-        setMode('view');
-      } catch (err) {
-        setError("Failed to load course data");
-        console.error("Fetch error:", err);
-      }
-    };
-
     fetchCourse();
   }, [courseId]);
+
+  const fetchCourse = async () => {
+    if (!courseId || courseId == " ") {
+      setMode('create')
+      setForm(initialFormState);
+      return;
+    }
+
+    try {
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API}/course/${courseId}`
+      );
+
+      setCourse(data);
+      setForm({
+        name: data.name || "",
+        description: data.description || "",
+        sub_description: data.sub_description || "",
+        additional_info: data.additional_info || "",
+        industries: data.industries?.map(i => i.name) || [],
+        instructor: data.instructor || "",
+        publishDate: data.publish_date?.split('T')[0] || new Date().toISOString().split('T')[0],
+      });
+      setMode('view');
+    } catch (err) {
+      setError("Failed to load course data");
+      console.error("Fetch error:", err);
+    }
+  };
 
   // การจัดการฟอร์ม
   const handleChange = (field, value) => {
@@ -236,6 +242,28 @@ const CourseForm = ({ courseId, onClose }) => {
     return new Date(dateString).toLocaleDateString('th-TH', options);
   };
 
+  const handleDeleteClick = (review) => {
+    setSelectedReview(review);
+    setIsModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API}/review`, {
+        data: {
+          id: selectedReview.id,
+          course_id: course.id,
+        },
+      });
+      // Optional: reload or update the review list
+      fetchCourse(); // หรือเรียกฟังก์ชัน refresh
+    } catch (error) {
+      console.error('Error deleting review:', error);
+    } finally {
+      setIsModalOpen(false);
+    }
+  };
+
   if (!courseId && mode === 'view') return null;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
@@ -243,20 +271,33 @@ const CourseForm = ({ courseId, onClose }) => {
     <div>
       <div className="bg-white rounded-2xl drop-shadow">
         {/* ส่วนหัว */}
-        <div className="bg-[#0A2463] flex flex-col items-center justify-center text-white p-5 relative">
-          <div className="absolute top-5 right-5 flex gap-2">
+        <div
+          className={`relative flex flex-col items-center justify-center text-white p-5 ${!selectedImage && !course?.image ? 'bg-[#0A2463]' : ''
+            }`}
+          style={{
+            backgroundImage: selectedImage
+              ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${URL.createObjectURL(selectedImage)})`
+              : course?.image?.image_path
+                ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${process.env.NEXT_PUBLIC_IMG}${course.image.image_path})`
+                : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
+          <div className="absolute top-5 right-5 flex flex-col gap-2">
             {mode === 'edit' || mode === 'create' ? (
               <>
                 <button
                   onClick={handleSubmit}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-green-500 rounded-md disabled:opacity-50"
+                  className="px-4 py-2 bg-green-500 rounded-md disabled:opacity-50 cursor-pointer"
                 >
-                  {isLoading ? 'กำลังบันทึก...' : (courseId ? 'บันทึกการเปลี่ยนแปลง' : 'สร้างหลักสูตร')}
+                  {isLoading ? 'กำลังบันทึก...' : courseId ? 'บันทึกการเปลี่ยนแปลง' : 'สร้างหลักสูตร'}
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="px-4 py-2 bg-gray-500 rounded-md"
+                  className="px-4 py-2 bg-gray-500 rounded-md cursor-pointer"
                 >
                   ยกเลิก
                 </button>
@@ -264,10 +305,30 @@ const CourseForm = ({ courseId, onClose }) => {
             ) : (
               <button
                 onClick={() => setMode('edit')}
-                className="px-4 py-2 bg-blue-500 rounded-md"
+                className="px-4 py-2 bg-blue-500 rounded-md cursor-pointer"
               >
                 แก้ไข
               </button>
+            )}
+          </div>
+
+          <div className="absolute top-5 left-5">
+            {(mode === 'edit' || mode === 'create') && (
+              <>
+                <input
+                  type="file"
+                  id="image-upload"
+                  accept="image/*"
+                  onChange={(e) => handleFileUpload(e, 'image')}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="image-upload"
+                  className="px-4 py-2 bg-blue-500 rounded-md cursor-pointer"
+                >
+                  {selectedImage ? 'เปลี่ยนภาพพื้นหลัง' : 'เพิ่มภาพพื้นหลัง'}
+                </label>
+              </>
             )}
           </div>
 
@@ -280,7 +341,7 @@ const CourseForm = ({ courseId, onClose }) => {
                   <input
                     value={form.name}
                     onChange={(e) => handleChange('name', e.target.value)}
-                    className="bg-[#0A2463] border-b text-center w-full"
+                    className="border-b text-center w-full"
                     placeholder="ชื่อหลักสูตร"
                   />
                 )}
@@ -313,46 +374,66 @@ const CourseForm = ({ courseId, onClose }) => {
 
             {/* ส่วนอัพโหลดภาพ */}
             <div className="relative group">
-              <div className="bg-[#D9D9D9] h-48 w-48 flex items-center justify-center overflow-hidden rounded-lg">
-                {(mode === 'edit' || mode === 'create') ? (
-                  <>
-                    <input
-                      type="file"
-                      id="image-upload"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, 'image')}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="image-upload"
-                      className="cursor-pointer w-full h-full flex items-center justify-center"
-                    >
-                      {selectedImage ? (
-                        <img
-                          src={URL.createObjectURL(selectedImage)}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
+              <div className="relative group w-full  max-w-2xl">
+                <div className="bg-black aspect-video flex h-48 items-center justify-center overflow-hidden rounded-lg">
+                  {(mode === 'edit' || mode === 'create') ? (
+                    <>
+                      <input
+                        type="file"
+                        id="video-upload"
+                        accept="video/*"
+                        onChange={(e) => handleFileUpload(e, 'video')}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="video-upload"
+                        className="cursor-pointer w-full h-full flex items-center justify-center"
+                      >
+                        {selectedVideo ? (
+                          <video
+                            src={URL.createObjectURL(selectedVideo)}
+                            className="w-full h-full object-cover"
+                            controls
+                          />
+                        ) : course?.resources ? (
+                          <video
+                            className="w-full h-full object-cover"
+                            controls
+                            autoPlay
+                            preload="auto"
+                            poster={`${process.env.NEXT_PUBLIC_IMG}/${course.resources.poster_path || '/default-poster.jpg'}`}
+                            data-setup="{}"
+                          >
+                            <source
+                              src={`${process.env.NEXT_PUBLIC_IMG}/${course.resources.files[0].file_path}`}
+                              type="video/mp4"
+                            />
+                            ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
+                          </video>
+                        ) : (
+                          <span className="text-gray-300">คลิกเพื่ออัพโหลดวิดีโอพื้นหลัง</span>
+                        )}
+                      </label>
+                    </>
+                  ) : (
+                    course?.resources && (
+                      <video
+                        className="w-full h-full object-cover"
+                        controls
+                        autoPlay
+                        preload="auto"
+                        poster={`${process.env.NEXT_PUBLIC_IMG}/${course.resources.poster_path || '/default-poster.jpg'}`}
+                        data-setup="{}"
+                      >
+                        <source
+                          src={`${process.env.NEXT_PUBLIC_IMG}/${course.resources.files[0].file_path}`}
+                          type="video/mp4"
                         />
-                      ) : course?.image ? (
-                        <img
-                          src={`${process.env.NEXT_PUBLIC_IMG}${course.image.image_path}`}
-                          alt="Course"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-gray-600">คลิกเพื่ออัพโหลดภาพปก</span>
-                      )}
-                    </label>
-                  </>
-                ) : (
-                  course?.image && (
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_IMG}${course.image.image_path}`}
-                      alt="Course"
-                      className="w-full h-full object-cover"
-                    />
-                  )
-                )}
+                        ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
+                      </video>
+                    )
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -383,7 +464,7 @@ const CourseForm = ({ courseId, onClose }) => {
                   <p className="text-gray-500">ยังไม่มีรีวิว</p>
                 ) : (
                   course.review.map((review) => (
-                    <div key={review.id} className="border rounded-lg p-4 mb-3">
+                    <div key={review.id} className="border rounded-lg p-4 mb-3 relative">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
@@ -391,9 +472,14 @@ const CourseForm = ({ courseId, onClose }) => {
                           </div>
                           <span>{review.username || 'ผู้ใช้ไม่ระบุชื่อ'}</span>
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {formatDate(review.created_at)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-500">
+                            {formatDate(review.created_at)}
+                          </span>
+                          <button onClick={() => handleDeleteClick(review)} className="text-red-500 hover:text-red-700 cursor-pointer">
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         {renderStars(review.score)}
@@ -481,38 +567,6 @@ const CourseForm = ({ courseId, onClose }) => {
               )}
             </div>
 
-            {/* วิดีโอ */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">วิดีโอหลักสูตร</h3>
-              {mode === 'view' ? (
-                course?.resources?.files?.[0] ? (
-                  <div className="p-2 border rounded">
-                    {course.resources.files[0].file_path}
-                  </div>
-                ) : (
-                  <p className="text-gray-500">ไม่มีวิดีโอ</p>
-                )
-              ) : (
-                <>
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={(e) => handleFileUpload(e, 'video')}
-                    className="hidden"
-                    id="video-upload"
-                  />
-                  <label
-                    htmlFor="video-upload"
-                    className="block p-2 border rounded cursor-pointer"
-                  >
-                    {selectedVideo
-                      ? selectedVideo.name
-                      : course?.resources?.files?.[0]?.file_path || 'คลิกเพื่ออัพโหลดวิดีโอ'}
-                  </label>
-                </>
-              )}
-            </div>
-
             {/* วันที่เผยแพร่ */}
             <div>
               <h3 className="text-lg font-semibold mb-2">วันที่เผยแพร่</h3>
@@ -534,14 +588,37 @@ const CourseForm = ({ courseId, onClose }) => {
       <div className="mt-6">
         <button
           onClick={onClose}
-          className="text-blue-500 underline flex items-center"
+          className="text-blue-500 underline flex items-center cursor-pointer"
         >
           <span className="mr-1">&lt;</span>
           กลับไปหน้ารายการ
         </button>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+            <h2 className="text-lg font-semibold mb-4">ยืนยันการลบ</h2>
+            <p className="text-sm mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบรีวิวนี้?</p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ยกเลิก
+              </button>
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
+                onClick={confirmDelete}
+              >
+                ลบ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default CourseForm;
+export default Detail;

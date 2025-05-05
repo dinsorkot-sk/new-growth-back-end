@@ -198,7 +198,7 @@ const Main = ({ handleViewDetail }) => {
                                 className="bg-white drop-shadow rounded-xl overflow-hidden hover:shadow-lg transition-shadow"
                             >
                                 <div className="bg-[#D9D9D9] h-48 w-full relative">
-                                    {course.image && (
+                                    {course?.image && (
                                         <img
                                             src={`${process.env.NEXT_PUBLIC_IMG}${course.image.image_path}`}
                                             alt={course.name}
@@ -224,7 +224,7 @@ const Main = ({ handleViewDetail }) => {
                                     <div className="flex justify-end mt-2">
                                         <button
                                             onClick={() => handleViewDetail(course)}
-                                            className="bg-[#26A65B] text-white rounded-lg px-4 py-2 text-sm hover:bg-[#1F8347] transition-colors"
+                                            className="bg-[#26A65B] text-white rounded-lg px-4 py-2 text-sm hover:bg-[#1F8347] transition-colors cursor-pointer"
                                         >
                                             ดูรายละเอียด
                                         </button>
