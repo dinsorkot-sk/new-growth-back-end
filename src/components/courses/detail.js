@@ -134,6 +134,8 @@ const CourseForm = ({ courseId, onClose }) => {
   // การอัพโหลดไฟล์
   const handleFileUpload = (e, type) => {
     const file = e.target.files[0];
+    console.log(file);
+    
     if (file) {
       if (type === 'image') setSelectedImage(file);
       if (type === 'video') setSelectedVideo(file);
