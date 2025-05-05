@@ -8,16 +8,6 @@ export const metadata = {
 };
 
 const Courses = () => {
-    // Dummy data for demonstration
-    const courses = Array(8).fill({
-        title: "การพัฒนาเว็บไซต์สำหรับผู้เริ่มต้น",
-        instructor: "อาจารย์สมชาย",
-        interested: 100,
-        rating: 4,
-        reviews: 25,
-        description: "เรียนรู้การพัฒนาเว็บไซต์ตั้งแต่พื้นฐาน HTML, CSS ไปจนถึง JavaScript และ PHP เหมาะสำหรับผู้เริ่มต้นที่ไม่มีประสบการณ์"
-    });      
-
     return (
         <div className="flex flex-row">
             <div className="fixed top-0">
@@ -30,7 +20,7 @@ const Courses = () => {
                     <h1 className="text-2xl font-semibold">จัดการหลักสูตร</h1>
                 </div>
 
-                <Index courses={courses} />
+                <Index/>
             </div>
         </div>
     );

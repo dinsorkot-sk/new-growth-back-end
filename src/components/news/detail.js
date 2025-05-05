@@ -108,21 +108,22 @@ const Detail = ({ news, onClose }) => {
 
     const handleAddCategory = () => {
         if (newCategory.trim() && !formData.categories.includes(newCategory.trim())) {
-          setFormData(prev => ({
-            ...prev,
-            categories: [...prev.categories, newCategory.trim()]
-          }));
-          setNewCategory('');
+            setFormData(prev => ({
+                ...prev,
+                categories: [...prev.categories, newCategory.trim()]
+            }));
+            setNewCategory('');
         }
-      };
-      
-      // ฟังก์ชันลบหมวดหมู่
-      const handleRemoveCategory = (index) => {
+    };
+
+    // ฟังก์ชันลบหมวดหมู่
+    const handleRemoveCategory = (index) => {
         setFormData(prev => ({
-          ...prev,
-          categories: prev.categories.filter((_, i) => i !== index)
+            ...prev,
+            categories: prev.categories.filter((_, i) => i !== index)
         }));
-      };
+    };
+    
     const dateFormatter = (p_date) => {
         const date = new Date(p_date);
         const formatter = new Intl.DateTimeFormat("en-GB", { day: '2-digit', month: 'long', year: 'numeric' });
@@ -159,7 +160,7 @@ const Detail = ({ news, onClose }) => {
                             {mode === 'view' && (
                                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                                     <span>วันที่: {dateFormatter(formData.publishDate)}</span>
-                                    <span>หมวดหมู่: {formData.categories.join(', ')}</span> 
+                                    <span>หมวดหมู่: {formData.categories.join(', ')}</span>
                                     <span>{news?.viewCount || 0} คนอ่าน</span>
                                 </div>
                             )}

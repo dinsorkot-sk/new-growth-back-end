@@ -3,25 +3,31 @@ import Main from "./main";
 import Detail from "./detail";
 import { useState } from "react";
 
-const Index = ({courses}) => { 
+const Index = () => { 
 
     const [selectedCourse, setSelectedCourse] = useState(null);
     
 
     const handleViewDetail = (course) => {
-        console.log("ดูรายละเอียด:", course);
-        // อาจจะเปิด modal หรือเปลี่ยน route
+        // console.log("ดูรายละเอียด:", course);
+        // // อาจจะเปิด modal หรือเปลี่ยน route
 
-        setSelectedCourse(course);
+        // setSelectedCourse(course.id);
+
+        if (course === null) {
+            setSelectedCourse(" ");
+        } else {
+            setSelectedCourse(course.id);
+        }
       };
 
 
     return (
         <div>
             {selectedCourse ? (
-                <Detail course={selectedCourse} onClose={() => setSelectedCourse(null)} />
+                <Detail courseId={selectedCourse} onClose={() => setSelectedCourse(null)} />
             ) : (
-                <Main courses={courses} handleViewDetail={handleViewDetail} />
+                <Main handleViewDetail={handleViewDetail} />
             )}
 
         </div>

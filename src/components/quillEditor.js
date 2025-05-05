@@ -97,7 +97,8 @@ export default function QuillEditor({ value = '', readOnly = false, onChange }) 
         id="editor"
         ref={editorRef}
         style={{ 
-          height: '300px', 
+          minHeight: '300px', 
+          maxHeight: '500px',
           marginBottom: '50px' 
         }} 
       />
