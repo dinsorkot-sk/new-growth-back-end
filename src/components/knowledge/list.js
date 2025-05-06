@@ -141,10 +141,33 @@ const DocumentList = ({
   };
 
   // Handler for page change
-  const handlePageChange = (page) => {
-    if (page < 1 || page > totalPages) return;
-    onPageChange(page);
-  };
+  // const handlePageChange = (page) => {
+  //   console.log(page)
+  //   if (page < 1 || page > totalPages) return;
+  //   onPageChange(page);
+  // };
+
+  // ปรับปรุงฟังก์ชัน handlePageChange
+const handlePageChange = (page) => {
+  // แปลงค่า page เป็น integer เพื่อป้องกันการรับค่าผิดพลาด
+  const newPage = parseInt(page, 10);
+  
+  // ตรวจสอบว่าค่าเป็นตัวเลขที่ถูกต้องหรือไม่
+  if (isNaN(newPage)) {
+    console.error("Page value is not a valid number");
+    return;
+  }
+  
+  // ตรวจสอบว่าอยู่ในขอบเขตหรือไม่
+  if (newPage < 1 || newPage > totalPages) {
+    console.log(`Page ${newPage} is out of range (1-${totalPages})`);
+    return;
+  }
+  
+  // เรียกใช้ callback หากผ่านการตรวจสอบทั้งหมด
+  console.log(`Changing to page ${newPage}`);
+  onPageChange(newPage);
+};
 
   return (
     <div className="bg-white rounded-md shadow-sm">

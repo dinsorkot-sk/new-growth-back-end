@@ -49,7 +49,16 @@ const DocumentIndex = () => {
   }, []);
 
   // ฟังก์ชันเมื่อมีการเปลี่ยนหน้า
-  const handlePageChange = (newOffset) => {
+  const handlePageChange = (page) => {
+    // ตรวจสอบว่าหน้าที่เลือกอยู่ในขอบเขตหรือไม่
+    
+    // คำนวณ offset จากเลขหน้า
+    // offset = (หน้าที่ต้องการ - 1) * จำนวนรายการต่อหน้า
+    const newOffset = (page - 1) * pagination.limit;
+    
+    console.log(`Changing to page ${page}, offset: ${newOffset}, limit: ${pagination.limit}`);
+    
+    // เรียกฟังก์ชันดึงข้อมูลด้วย offset และ limit
     fetchDocuments(newOffset, pagination.limit);
   };
 
