@@ -110,7 +110,7 @@ const Index = ({ initialRefType = "course" }) => {
             setLoading(true);
             const { offset, limit } = pagination;
             const response = await axios.get(
-                `http://localhost:3001/api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`
+               `${process.env.NEXT_PUBLIC_IMG}api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`
             );
             
             setImages(response.data.images || []);
@@ -181,7 +181,7 @@ const Index = ({ initialRefType = "course" }) => {
             
             // Upload image to server
             const response = await axios.post(
-                'http://localhost:3001/api/admin/image',
+                `${process.env.NEXT_PUBLIC_API}/image`,
                 formData,
                 {
                     headers: {
@@ -208,7 +208,7 @@ const Index = ({ initialRefType = "course" }) => {
                 setLoading(true);
                 
                 // Call API to delete image
-                await axios.delete(`http://localhost:3001/api/admin/image/${imageToDelete.id}`);
+                await axios.delete(`${process.env.NEXT_PUBLIC_API}/image/${imageToDelete.id}`);
                 
                 // Refresh images list
                 fetchImages();
@@ -238,7 +238,7 @@ const Index = ({ initialRefType = "course" }) => {
                     image={selectedImage} 
                     onClose={() => setSelectedImage(null)}
                     onDelete={handleDeleteImage}
-                    baseUrl="http://localhost:3001"
+                    baseUrl={`${process.env.NEXT_PUBLIC_IMG}`}
                 />
             ) : (
                 <Main 
@@ -256,7 +256,7 @@ const Index = ({ initialRefType = "course" }) => {
                     showAddModal={showAddModal}
                     onAddImage={handleAddImage}
                     onCloseModal={() => setShowAddModal(false)}
-                    baseUrl="http://localhost:3001"
+                    baseUrl={`${process.env.NEXT_PUBLIC_IMG}`}
                 />
             )}
         </div>

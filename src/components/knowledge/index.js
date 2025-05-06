@@ -184,7 +184,7 @@ const DocumentIndex = () => {
       console.log("download", id);
       // ทำการเรียก API เพื่อดาวน์โหลดไฟล์
       const response = await axios.get(
-        `http://localhost:3001/api/video/downloadVideo/${id}`,
+        `${process.env.NEXT_PUBLIC_IMG}api/video/downloadVideo/${id}`,
         {
           responseType: "blob", // สำคัญมาก - ต้องระบุ responseType เป็น 'blob' สำหรับการดาวน์โหลดไฟล์
         }

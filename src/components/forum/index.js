@@ -368,7 +368,7 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
             setStatusMessage({ type: 'info', text: 'กำลังอัปเดตสถานะ...' });
 
             // เรียก API เพื่ออัปเดตสถานะ
-            const response = await fetch(`http://localhost:3001/api/admin/answer/${answerId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/answer/${answerId}`, {
                 method: 'PUT',
                 body:{
                     status:newStatus
@@ -429,7 +429,7 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
             setStatusMessage({ type: 'info', text: 'กำลังลบคำตอบ...' });
 
             // เรียก API เพื่อลบคำตอบ
-            const response = await fetch(`http://localhost:3001/api/admin/answer/${answerId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/answer/${answerId}`, {
                 method: 'DELETE',
             });
 

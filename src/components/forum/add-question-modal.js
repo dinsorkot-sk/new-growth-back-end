@@ -148,7 +148,7 @@ const AddQuestionModal = ({ onClose, onSave, selectedCategory }) => {
             };
             
             // Send data to the API
-            const response = await fetch('http://localhost:3001/api/admin/topic', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/topic`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

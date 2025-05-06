@@ -306,7 +306,7 @@ const Questions = () => {
       console.log(`กำลังเรียกข้อมูลจาก API: หน้า ${pageNumber}, limit ${limit}, offset ${offset}`);
       
       const response = await fetch(
-        `http://localhost:3001/api/admin/topic?offset=${offset}&limit=${limit}`
+        `${process.env.NEXT_PUBLIC_API}/topic?offset=${offset}&limit=${limit}`
       );
       
       if (!response.ok) {
