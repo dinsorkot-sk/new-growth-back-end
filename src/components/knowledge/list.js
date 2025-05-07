@@ -171,7 +171,7 @@ const handlePageChange = (page) => {
 
   return (
     <div className="bg-white rounded-md shadow-sm">
-      <div className="flex justify-between items-center p-4 border-b">
+      <div className="flex justify-between items-center p-4 border-b border-gray-300">
         <h1 className="text-xl font-medium">คลังความรู้ออนไลน์</h1>
         <button
           className="bg-green-500 hover:bg-green-600 text-white py-1 px-4 rounded-md transition"
@@ -181,14 +181,14 @@ const handlePageChange = (page) => {
         </button>
       </div>
 
-      <div className="p-4 border-b">
+      <div className="p-4 border-b border-gray-300">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
               <input
                 type="text"
                 placeholder="ค้นหาเอกสาร..."
-                className="pl-10 pr-3 py-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
+                className="pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
                 value={searchQuery}
                 onChange={handleSearchChange}
               />
@@ -200,7 +200,7 @@ const handlePageChange = (page) => {
           </div>
           <div className="w-full md:w-48">
             <select
-              className="pl-3 pr-6 py-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
+              className="pl-3 pr-6 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
               value={typeFilter}
               onChange={handleTypeChange}
             >

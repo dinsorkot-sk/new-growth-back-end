@@ -8,14 +8,13 @@ export const metadata = {
 const ActivityPage = () => {
     return (
         <div className="flex flex-row min-h-screen bg-gray-100">
-            <Sidebar />
-            <div className="flex-1 ">
-                <div className="container mx-auto p-4">
-                    <div className="bg-white rounded-md shadow-sm mb-6">
-                        
-                        <div className="p-4">
-                            <ActivityForm />
-                        </div>
+            <div className="fixed top-0">
+                <Sidebar />
+            </div>
+            <div className="ms-56 flex-1 ">
+                <div className="bg-white rounded-md shadow-sm mb-6">
+                    <div className="p-4">
+                        <ActivityForm />
                     </div>
                 </div>
             </div>
