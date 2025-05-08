@@ -111,7 +111,7 @@ const Index = () => {
     labels: data?.courses?.map(c => c.name) || [],
     datasets: [{
       label: 'คะแนนความนิยม',
-      data: data?.courses?.map(c => c.popularity || 0) || [],
+      data: data?.courses?.map(c => c.score || 0) || [],
       backgroundColor: 'rgba(37, 191, 140, 0.8)',
       borderColor: '#25BF8C',
       borderWidth: 1,
