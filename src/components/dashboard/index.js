@@ -21,6 +21,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const chartOptions = {
@@ -83,11 +84,9 @@ const Index = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const baseURL = process.env.NEXT_PUBLIC_IMG || '';
-        const response = await fetch(`${baseURL}api/admin/dashboard`);
-        if (!response.ok) throw new Error('Failed to fetch');
-        const result = await response.json();
-        setData(result);
+        const baseURL = process.env.NEXT_PUBLIC_API || '';
+        const response = await axios.get(`${baseURL}/dashboard`);
+        setData(response.data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -266,10 +265,6 @@ const Index = () => {
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
           <div className="flex justify-between items-center mb-6">
             <h3 id='messages' className="text-lg font-semibold text-gray-800">ข้อความล่าสุด</h3>
-            <button className="text-blue-600 hover:text-blue-800 transition-colors flex items-center text-sm font-medium">
-              ดูทั้งหมด
-              <ChevronRight size={16} className="ml-1" />
-            </button>
           </div>
           
           {data.latestMessages?.length > 0 ? (
