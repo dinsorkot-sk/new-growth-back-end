@@ -84,7 +84,7 @@ const Index = () => {
       try {
         setIsLoading(true);
         const baseURL = process.env.NEXT_PUBLIC_IMG || '';
-        const response = await fetch(`${baseURL}/api/admin/dashboard`);
+        const response = await fetch(`${baseURL}api/admin/dashboard`);
         if (!response.ok) throw new Error('Failed to fetch');
         const result = await response.json();
         setData(result);

@@ -1,6 +1,6 @@
 
 import Sidebar from "@/components/sidebar";
-import Index from "@/components/courses/index";
+import Main from "@/components/courses/main";
 
 export const metadata = {
     title: "Courses",
@@ -20,7 +20,7 @@ const Courses = () => {
                     <h1 className="text-2xl font-semibold">จัดการหลักสูตร</h1>
                 </div>
 
-                <Index/>
+                <Main/>
             </div>
         </div>
     );

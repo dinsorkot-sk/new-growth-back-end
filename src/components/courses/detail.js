@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 import axios from "axios";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
-const QuillEditor = dynamic(() => import('../quillEditor'), {
+const QuillEditor = dynamic(() => import("../quillEditor"), {
   ssr: false,
   loading: () => <p>Loading editor...</p>,
 });
@@ -59,9 +59,9 @@ const renderStars = (rating) => {
   );
 };
 
-const Detail = ({ courseId, onClose }) => {
+const Detail = ({ courseId }) => {
   const router = useRouter();
-  const [mode, setMode] = useState(courseId ? 'view' : 'create');
+  const [mode, setMode] = useState(courseId ? "view" : "create");
   const [course, setCourse] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -78,7 +78,7 @@ const Detail = ({ courseId, onClose }) => {
     additional_info: "",
     industries: [],
     instructor: "",
-    publishDate: new Date().toISOString().split('T')[0],
+    publishDate: new Date().toISOString().split("T")[0],
   };
 
   const [form, setForm] = useState(initialFormState);
@@ -89,8 +89,8 @@ const Detail = ({ courseId, onClose }) => {
   }, [courseId]);
 
   const fetchCourse = async () => {
-    if (!courseId || courseId == " ") {
-      setMode('create')
+    if (!courseId || courseId == " " || courseId == "create") {
+      setMode("create");
       setForm(initialFormState);
       return;
     }
@@ -106,11 +106,13 @@ const Detail = ({ courseId, onClose }) => {
         description: data.description || "",
         sub_description: data.sub_description || "",
         additional_info: data.additional_info || "",
-        industries: data.industries?.map(i => i.name) || [],
+        industries: data.industries?.map((i) => i.name) || [],
         instructor: data.instructor || "",
-        publishDate: data.publish_date?.split('T')[0] || new Date().toISOString().split('T')[0],
+        publishDate:
+          data.publish_date?.split("T")[0] ||
+          new Date().toISOString().split("T")[0],
       });
-      setMode('view');
+      setMode("view");
     } catch (err) {
       setError("Failed to load course data");
       console.error("Fetch error:", err);
@@ -119,32 +121,31 @@ const Detail = ({ courseId, onClose }) => {
 
   // การจัดการฟอร์ม
   const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleTagChange = (index, value) => {
     const newTags = [...form.industries];
     newTags[index] = value;
-    setForm(prev => ({ ...prev, industries: newTags }));
+    setForm((prev) => ({ ...prev, industries: newTags }));
   };
 
   const addTag = () => {
-    setForm(prev => ({ ...prev, industries: [...prev.industries, ""] }));
+    setForm((prev) => ({ ...prev, industries: [...prev.industries, ""] }));
   };
 
   const removeTag = (index) => {
     const newTags = form.industries.filter((_, i) => i !== index);
-    setForm(prev => ({ ...prev, industries: newTags }));
+    setForm((prev) => ({ ...prev, industries: newTags }));
   };
 
   // การอัพโหลดไฟล์
   const handleFileUpload = (e, type) => {
     const file = e.target.files[0];
-    console.log(file);
-    
+
     if (file) {
-      if (type === 'image') setSelectedImage(file);
-      if (type === 'video') setSelectedVideo(file);
+      if (type === "image") setSelectedImage(file);
+      if (type === "video") setSelectedVideo(file);
     }
   };
 
@@ -162,43 +163,47 @@ const Detail = ({ courseId, onClose }) => {
 
     try {
       const formData = new FormData();
-      const token = Cookies.get('auth-token');
+      const token = Cookies.get("auth-token");
 
       // ข้อมูลพื้นฐาน
-      formData.append('name', form.name);
-      formData.append('description', form.description);
-      formData.append('sub_description', form.sub_description);
-      formData.append('additional_info', form.additional_info);
-      formData.append('industries', form.industries.join(','));
-      formData.append('instructor', form.instructor);
-      formData.append('author', form.instructor);
-      formData.append('published_date', new Date(form.publishDate).toISOString());
+      formData.append("name", form.name);
+      formData.append("description", form.description);
+      formData.append("sub_description", form.sub_description);
+      formData.append("additional_info", form.additional_info);
+      formData.append("industries", form.industries.join(","));
+      formData.append("instructor", form.instructor);
+      formData.append("author", form.instructor);
+      formData.append(
+        "published_date",
+        new Date(form.publishDate).toISOString()
+      );
 
       // ไฟล์แนบ
-      if (selectedImage) formData.append('image', selectedImage);
-      if (selectedVideo) formData.append('video', selectedVideo);
+      if (selectedImage) formData.append("image", selectedImage);
+      if (selectedVideo) formData.append("video", selectedVideo);
 
       // ส่งคำขอ API
-      const url = courseId != " "
-        ? `${process.env.NEXT_PUBLIC_API}/course/${courseId}`
-        : `${process.env.NEXT_PUBLIC_API}/course`;
+      const url =
+        courseId != "create"
+          ? `${process.env.NEXT_PUBLIC_API}/course/${courseId}`
+          : `${process.env.NEXT_PUBLIC_API}/course`;
 
-      const method = courseId != " " ? 'put' : 'post';
+      const method = courseId != "create" ? "put" : "post";
 
       const { data } = await axios({
         method,
         url,
         data: formData,
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
-        }
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       // จัดการผลลัพธ์
       if (courseId) {
         setCourse(data);
-        setMode('view');
+        setMode("view");
         router.refresh();
       } else {
         router.push(`/admin/courses/${data.id}`);
@@ -215,15 +220,15 @@ const Detail = ({ courseId, onClose }) => {
   // ยกเลิกการแก้ไข
   const handleCancel = () => {
     if (courseId) {
-      setMode('view');
+      setMode("view");
       setForm({
         name: course.name,
         description: course.description,
         sub_description: course.sub_description,
         additional_info: course.additional_info,
-        industries: course.industries?.map(i => i.name) || [],
+        industries: course.industries?.map((i) => i.name) || [],
         instructor: course.instructor,
-        publishDate: course.publish_date?.split('T')[0],
+        publishDate: course.publish_date?.split("T")[0],
       });
     } else {
       onClose();
@@ -235,13 +240,15 @@ const Detail = ({ courseId, onClose }) => {
   // คำนวณคะแนนรีวิว
   const calculateAverageRating = (reviews) => {
     if (!reviews?.length) return 0;
-    return (reviews.reduce((sum, r) => sum + r.score, 0) / reviews.length).toFixed(1);
+    return (
+      reviews.reduce((sum, r) => sum + r.score, 0) / reviews.length
+    ).toFixed(1);
   };
 
   // จัดรูปแบบวันที่
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('th-TH', options);
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString("th-TH", options);
   };
 
   const handleDeleteClick = (review) => {
@@ -260,42 +267,53 @@ const Detail = ({ courseId, onClose }) => {
       // Optional: reload or update the review list
       fetchCourse(); // หรือเรียกฟังก์ชัน refresh
     } catch (error) {
-      console.error('Error deleting review:', error);
+      console.error("Error deleting review:", error);
     } finally {
       setIsModalOpen(false);
     }
   };
 
-  if (!courseId && mode === 'view') return null;
+  if (!courseId && mode === "view") return null;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
+
+  const onClose = () => {
+    router.back();
+  };
 
   return (
     <div>
       <div className="bg-white rounded-2xl drop-shadow">
         {/* ส่วนหัว */}
         <div
-          className={`relative flex flex-col items-center justify-center text-white p-5 ${!selectedImage && !course?.image ? 'bg-[#0A2463]' : ''
-            }`}
+          className={`relative flex flex-col items-center justify-center text-white p-5 ${
+            !selectedImage && !course?.image ? "bg-[#0A2463]" : ""
+          }`}
           style={{
             backgroundImage: selectedImage
-              ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${URL.createObjectURL(selectedImage)})`
+              ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${URL.createObjectURL(
+                  selectedImage
+                )})`
               : course?.image?.image_path
-                ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${process.env.NEXT_PUBLIC_IMG}${course.image.image_path})`
-                : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
+              ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${process.env.NEXT_PUBLIC_IMG}${course.image.image_path})`
+              : undefined,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
           }}
         >
           <div className="absolute top-5 right-5 flex flex-col gap-2">
-            {mode === 'edit' || mode === 'create' ? (
+            {mode === "edit" || mode === "create" ? (
               <>
                 <button
                   onClick={handleSubmit}
                   disabled={isLoading}
                   className="px-4 py-2 bg-green-500 rounded-md disabled:opacity-50 cursor-pointer"
                 >
-                  {isLoading ? 'กำลังบันทึก...' : courseId ? 'บันทึกการเปลี่ยนแปลง' : 'สร้างหลักสูตร'}
+                  {isLoading
+                    ? "กำลังบันทึก..."
+                    : courseId
+                    ? "บันทึกการเปลี่ยนแปลง"
+                    : "สร้างหลักสูตร"}
                 </button>
                 <button
                   onClick={handleCancel}
@@ -306,7 +324,7 @@ const Detail = ({ courseId, onClose }) => {
               </>
             ) : (
               <button
-                onClick={() => setMode('edit')}
+                onClick={() => setMode("edit")}
                 className="px-4 py-2 bg-blue-500 rounded-md cursor-pointer"
               >
                 แก้ไข
@@ -315,20 +333,20 @@ const Detail = ({ courseId, onClose }) => {
           </div>
 
           <div className="absolute top-5 left-5">
-            {(mode === 'edit' || mode === 'create') && (
+            {(mode === "edit" || mode === "create") && (
               <>
                 <input
                   type="file"
                   id="image-upload"
                   accept="image/*"
-                  onChange={(e) => handleFileUpload(e, 'image')}
+                  onChange={(e) => handleFileUpload(e, "image")}
                   className="hidden"
                 />
                 <label
                   htmlFor="image-upload"
                   className="px-4 py-2 bg-blue-500 rounded-md cursor-pointer"
                 >
-                  {selectedImage ? 'เปลี่ยนภาพพื้นหลัง' : 'เพิ่มภาพพื้นหลัง'}
+                  {selectedImage ? "เปลี่ยนภาพพื้นหลัง" : "เพิ่มภาพพื้นหลัง"}
                 </label>
               </>
             )}
@@ -337,19 +355,19 @@ const Detail = ({ courseId, onClose }) => {
           <div className="flex flex-col md:flex-row items-center justify-center gap-10">
             <div className="text-center">
               <h1 className="text-2xl mb-2">
-                {mode === 'view' ? (
+                {mode === "view" ? (
                   course?.name || "หลักสูตรใหม่"
                 ) : (
                   <input
                     value={form.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
+                    onChange={(e) => handleChange("name", e.target.value)}
                     className="border-b text-center w-full"
                     placeholder="ชื่อหลักสูตร"
                   />
                 )}
               </h1>
 
-              {mode === 'view' ? (
+              {mode === "view" ? (
                 <>
                   <p>{course?.description}</p>
                   {course?.review && (
@@ -367,7 +385,7 @@ const Detail = ({ courseId, onClose }) => {
               ) : (
                 <textarea
                   value={form.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
+                  onChange={(e) => handleChange("description", e.target.value)}
                   className="w-full p-2 bg-transparent border-b text-center"
                   placeholder="คำอธิบายสั้น"
                 />
@@ -378,13 +396,13 @@ const Detail = ({ courseId, onClose }) => {
             <div className="relative group">
               <div className="relative group w-full  max-w-2xl">
                 <div className="bg-black aspect-video flex h-48 items-center justify-center overflow-hidden rounded-lg">
-                  {(mode === 'edit' || mode === 'create') ? (
+                  {mode === "edit" || mode === "create" ? (
                     <>
                       <input
                         type="file"
                         id="video-upload"
                         accept="video/*"
-                        onChange={(e) => handleFileUpload(e, 'video')}
+                        onChange={(e) => handleFileUpload(e, "video")}
                         className="hidden"
                       />
                       <label
@@ -403,7 +421,10 @@ const Detail = ({ courseId, onClose }) => {
                             controls
                             autoPlay
                             preload="auto"
-                            poster={`${process.env.NEXT_PUBLIC_IMG}/${course.resources.poster_path || '/default-poster.jpg'}`}
+                            poster={`${process.env.NEXT_PUBLIC_IMG}/${
+                              course.resources.poster_path ||
+                              "/default-poster.jpg"
+                            }`}
                             data-setup="{}"
                           >
                             <source
@@ -413,7 +434,9 @@ const Detail = ({ courseId, onClose }) => {
                             ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
                           </video>
                         ) : (
-                          <span className="text-gray-300">คลิกเพื่ออัพโหลดวิดีโอพื้นหลัง</span>
+                          <span className="text-gray-300">
+                            คลิกเพื่ออัพโหลดวิดีโอพื้นหลัง
+                          </span>
                         )}
                       </label>
                     </>
@@ -424,7 +447,9 @@ const Detail = ({ courseId, onClose }) => {
                         controls
                         autoPlay
                         preload="auto"
-                        poster={`${process.env.NEXT_PUBLIC_IMG}/${course.resources.poster_path || '/default-poster.jpg'}`}
+                        poster={`${process.env.NEXT_PUBLIC_IMG}/${
+                          course.resources.poster_path || "/default-poster.jpg"
+                        }`}
                         data-setup="{}"
                       >
                         <source
@@ -447,38 +472,44 @@ const Detail = ({ courseId, onClose }) => {
           <div className="flex-1">
             <h2 className="text-xl font-bold mb-4">เนื้อหาหลักสูตร</h2>
 
-            {mode === 'view' ? (
+            {mode === "view" ? (
               <div dangerouslySetInnerHTML={{ __html: form.sub_description }} />
             ) : (
               <div>
                 <QuillEditor
                   value={form.sub_description}
-                  onChange={(value) => handleChange('sub_description', value)}
+                  onChange={(value) => handleChange("sub_description", value)}
                 />
               </div>
             )}
 
             {/* ส่วนรีวิว */}
-            {mode === 'view' && course?.review && (
+            {mode === "view" && course?.review && (
               <div className="mt-8">
                 <h2 className="text-xl font-bold mb-4">รีวิวจากผู้เรียน</h2>
                 {course.review.length === 0 ? (
                   <p className="text-gray-500">ยังไม่มีรีวิว</p>
                 ) : (
                   course.review.map((review) => (
-                    <div key={review.id} className="border rounded-lg p-4 mb-3 relative">
+                    <div
+                      key={review.id}
+                      className="border rounded-lg p-4 mb-3 relative"
+                    >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
-                            {review.username?.[0] || 'U'}
+                            {review.username?.[0] || "U"}
                           </div>
-                          <span>{review.username || 'ผู้ใช้ไม่ระบุชื่อ'}</span>
+                          <span>{review.username || "ผู้ใช้ไม่ระบุชื่อ"}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-gray-500">
                             {formatDate(review.created_at)}
                           </span>
-                          <button onClick={() => handleDeleteClick(review)} className="text-red-500 hover:text-red-700 cursor-pointer">
+                          <button
+                            onClick={() => handleDeleteClick(review)}
+                            className="text-red-500 hover:text-red-700 cursor-pointer"
+                          >
                             <FontAwesomeIcon icon={faTrash} />
                           </button>
                         </div>
@@ -499,13 +530,15 @@ const Detail = ({ courseId, onClose }) => {
           <div className="flex-1 space-y-6">
             <div>
               <h2 className="text-xl font-bold mb-4">ข้อมูลเพิ่มเติม</h2>
-              {mode === 'view' ? (
-                <div dangerouslySetInnerHTML={{ __html: form.additional_info }} />
+              {mode === "view" ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: form.additional_info }}
+                />
               ) : (
                 <div>
                   <QuillEditor
                     value={form.additional_info}
-                    onChange={(value) => handleChange('additional_info', value)}
+                    onChange={(value) => handleChange("additional_info", value)}
                   />
                 </div>
               )}
@@ -514,10 +547,13 @@ const Detail = ({ courseId, onClose }) => {
             {/* หมวดหมู่ */}
             <div>
               <h3 className="text-lg font-semibold mb-2">หมวดหมู่</h3>
-              {mode === 'view' ? (
+              {mode === "view" ? (
                 <div className="flex flex-wrap gap-2">
                   {form.industries.map((tag, i) => (
-                    <span key={i} className="px-3 py-1 bg-gray-200 rounded-full text-sm">
+                    <span
+                      key={i}
+                      className="px-3 py-1 bg-gray-200 rounded-full text-sm"
+                    >
                       {tag}
                     </span>
                   ))}
@@ -552,17 +588,17 @@ const Detail = ({ courseId, onClose }) => {
             {/* ผู้สอน */}
             <div>
               <h3 className="text-lg font-semibold mb-2">ผู้สอน</h3>
-              {mode === 'view' ? (
+              {mode === "view" ? (
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
-                    {form.instructor?.[0] || 'T'}
+                    {form.instructor?.[0] || "T"}
                   </div>
                   <span>{form.instructor}</span>
                 </div>
               ) : (
                 <input
                   value={form.instructor}
-                  onChange={(e) => handleChange('instructor', e.target.value)}
+                  onChange={(e) => handleChange("instructor", e.target.value)}
                   className="w-full p-2 border rounded"
                   placeholder="ชื่อผู้สอน"
                 />
@@ -572,13 +608,13 @@ const Detail = ({ courseId, onClose }) => {
             {/* วันที่เผยแพร่ */}
             <div>
               <h3 className="text-lg font-semibold mb-2">วันที่เผยแพร่</h3>
-              {mode === 'view' ? (
+              {mode === "view" ? (
                 <p>{formatDate(form.publishDate)}</p>
               ) : (
                 <input
                   type="date"
                   value={form.publishDate}
-                  onChange={(e) => handleChange('publishDate', e.target.value)}
+                  onChange={(e) => handleChange("publishDate", e.target.value)}
                   className="p-2 border rounded w-full"
                 />
               )}
@@ -588,13 +624,15 @@ const Detail = ({ courseId, onClose }) => {
       </div>
 
       <div className="mt-6">
-        <button
-          onClick={onClose}
-          className="text-blue-500 underline flex items-center cursor-pointer"
-        >
-          <span className="mr-1">&lt;</span>
-          กลับไปหน้ารายการ
-        </button>
+        <a href="/">
+          <button
+            onClick={onClose}
+            className="text-blue-500 underline flex items-center cursor-pointer"
+          >
+            <span className="mr-1">&lt;</span>
+            กลับไปหน้ารายการ
+          </button>
+        </a>
       </div>
 
       {isModalOpen && (

@@ -9,7 +9,6 @@ const Index = () => {
     
 
     const handleViewDetail = (course) => {
-        // console.log("ดูรายละเอียด:", course);
         // // อาจจะเปิด modal หรือเปลี่ยน route
 
         // setSelectedCourse(course.id);
