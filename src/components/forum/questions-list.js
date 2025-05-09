@@ -1,91 +1,13 @@
-
-// "use client";
-// import { useState } from "react";
-// import { ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
-
-// const QuestionsList = ({ questions }) => {
-//     return (
-//         <div className="bg-white rounded-2xl overflow-hidden drop-shadow">
-//             {questions.length > 0 ? (
-//                 questions.map((question, index) => (
-//                     <QuestionItem 
-//                         key={question.id} 
-//                         question={question} 
-//                         isLast={index === questions.length - 1}
-//                     />
-//                 ))
-//             ) : (
-//                 <div className="p-8 text-center text-gray-500">
-//                     ไม่พบคำถามที่ตรงกับเงื่อนไขที่เลือก
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
-
-// const QuestionItem = ({ question, isLast }) => {
-//     const [isOpen, setIsOpen] = useState(false);
-
-//     const toggleOpen = () => {
-//         setIsOpen(!isOpen);
-//     };
-
-//     return (
-//         <div className={`${!isLast ? 'border-b border-gray-200' : ''}`}>
-//             <div 
-//                 className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
-//                 onClick={toggleOpen}
-//             >
-//                 <div className="flex-1">
-//                     <h3 className="text-gray-700 font-medium">{question.text}</h3>
-//                     <div className="flex items-center mt-2 text-sm text-gray-500">
-//                         <MessageCircle size={16} className="mr-1" />
-//                         <span>{question.answers?.length || 0} คำตอบ</span>
-//                     </div>
-//                 </div>
-//                 <div className="text-gray-500">
-//                     {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-//                 </div>
-//             </div>
-
-//             {isOpen && (
-//                 <div className="bg-gray-50 px-4 py-2">
-//                     {question.answers && question.answers.length > 0 ? (
-//                         <div className="space-y-4">
-//                             <h4 className="text-sm font-medium text-gray-700 mb-2">คำตอบ:</h4>
-//                             {question.answers.map((answer) => (
-//                                 <div key={answer.id} className="bg-white p-4 rounded-lg shadow-sm">
-//                                     <div className="flex items-center mb-2">
-//                                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium mr-2">
-//                                             {answer.user?.name?.charAt(0) || "U"}
-//                                         </div>
-//                                         <div>
-//                                             <p className="font-medium">{answer.user?.name || "ผู้ใช้"}</p>
-//                                             <p className="text-xs text-gray-500">{answer.createdAt ? new Date(answer.createdAt).toLocaleDateString('th-TH') : "ไม่ระบุวันที่"}</p>
-//                                         </div>
-//                                     </div>
-//                                     <p className="text-gray-700">{answer.text}</p>
-//                                 </div>
-//                             ))}
-//                         </div>
-//                     ) : (
-//                         <div className="text-center py-4 text-gray-500">
-//                             ยังไม่มีคำตอบสำหรับคำถามนี้
-//                         </div>
-//                     )}
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
-
-// export default QuestionsList;
-
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, MessageCircle, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { useSearchParams } from 'next/navigation';
 
 const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
+    const searchParams = useSearchParams();
+    const questionId = searchParams.get('questionId');
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+
     return (
         <div className="bg-white rounded-2xl overflow-hidden drop-shadow">
             {questions.length > 0 ? (
@@ -96,6 +18,8 @@ const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
                         isLast={index === questions.length - 1}
                         onUpdateAnswerStatus={onUpdateAnswerStatus}
                         onDeleteAnswer={onDeleteAnswer}
+                        isAutoExpanded={questionId && question.id.toString() === questionId}
+                        targetAnswerId={hash.replace('#answer-', '')}
                     />
                 ))
             ) : (
@@ -107,9 +31,26 @@ const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
     );
 };
 
-const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer }) => {
-    const [isOpen, setIsOpen] = useState(false);
+const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, isAutoExpanded, targetAnswerId }) => {
+    const [isOpen, setIsOpen] = useState(isAutoExpanded);
     const [confirmDelete, setConfirmDelete] = useState(null);
+
+    useEffect(() => {
+        if (isAutoExpanded && targetAnswerId) {
+            // รอให้ DOM โหลดเสร็จก่อนที่จะเลื่อนไปที่คำตอบ
+            setTimeout(() => {
+                const answerElement = document.getElementById(`answer-${targetAnswerId}`);
+                if (answerElement) {
+                    answerElement.scrollIntoView({ behavior: 'smooth' });
+                    // เพิ่ม highlight effect
+                    answerElement.classList.add('bg-yellow-50');
+                    setTimeout(() => {
+                        answerElement.classList.remove('bg-yellow-50');
+                    }, 2000);
+                }
+            }, 500);
+        }
+    }, [isAutoExpanded, targetAnswerId]);
 
     const toggleOpen = () => {
         setIsOpen(!isOpen);
@@ -162,7 +103,13 @@ const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer }
                         <div className="space-y-4">
                             <h4 className="text-sm font-medium text-gray-700 mb-2">คำตอบ:</h4>
                             {question.answers.map((answer) => (
-                                <div key={answer.id} className="bg-white p-4 rounded-lg shadow-sm">
+                                <div 
+                                    key={answer.id} 
+                                    id={`answer-${answer.id}`}
+                                    className={`bg-white p-4 rounded-lg shadow-sm ${
+                                        targetAnswerId && answer.id.toString() === targetAnswerId ? 'border-2 border-blue-500' : ''
+                                    }`}
+                                >
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center">
                                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium mr-2">

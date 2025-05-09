@@ -20,7 +20,7 @@ import {
   Users,
   ChevronRight
 } from 'lucide-react';
-
+import { useRouter } from 'next/navigation';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const chartOptions = {
@@ -73,6 +73,8 @@ const chartOptions = {
 };
 
 const Index = () => {
+  const router = useRouter();
+
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -160,7 +162,7 @@ const Index = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen font-sans">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">แดชบอร์ดผู้ดูแลระบบ</h1>
 
       {/* Cards Row */}
@@ -273,7 +275,17 @@ const Index = () => {
           {data.latestMessages?.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {data.latestMessages.map((msg, index) => (
-                <div key={msg.id || msg.created_at || index} className="py-4 hover:bg-gray-50 px-2 rounded transition-colors">
+                <div 
+                  key={msg.id || msg.created_at || index} 
+                  className="py-4 hover:bg-gray-50 px-2 rounded transition-colors cursor-pointer"
+                  onClick={() => {
+                    if (msg.type === 'forum') {
+                      router.push(`/forum?questionId=${msg.topic_id}#answer-${msg.id}`);
+                    } else if (msg.type === 'course') {
+                      router.push(`/courses/${msg.course_id}`);
+                    }
+                  }}
+                >
                   <p className="font-medium text-gray-800">
                     {(msg.answer_text || msg.comment || '').substring(0, 40)}...
                   </p>
@@ -300,7 +312,7 @@ const Index = () => {
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold text-gray-800">กิจกรรมล่าสุด</h3>
-            <button className="text-blue-600 hover:text-blue-800 transition-colors flex items-center text-sm font-medium">
+            <button className="text-blue-600 hover:text-blue-800 transition-colors flex items-center text-sm font-medium cursor-pointer" onClick={() => router.push('/news')}>
               ดูทั้งหมด
               <ChevronRight size={16} className="ml-1" />
             </button>
@@ -309,7 +321,7 @@ const Index = () => {
           {data.latestActivities?.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {data.latestActivities.map((activity, index) => (
-                <div key={activity.id || activity.created_at || index} className="py-4 hover:bg-gray-50 px-2 rounded transition-colors">
+                <div key={activity.id || activity.created_at || index} className="py-4 hover:bg-gray-50 px-2 rounded transition-colors cursor-pointer" onClick={() => router.push(`/news/${activity.id}`)} >
                   <p className="font-medium text-gray-800">{activity.title || 'ไม่ทราบหัวข้อ'}</p>
                   <p className="text-sm text-gray-600 mt-1">{activity.short_description}</p>
                   <p className="text-sm text-gray-500 mt-1 flex items-center">
