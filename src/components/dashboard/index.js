@@ -233,7 +233,7 @@ const Index = () => {
               <Calendar size={20} />
             </div>
           </div>
-          <div className="text-3xl font-bold my-3">{data.todayActivities?.toLocaleString() || 0}</div>
+          <div className="text-3xl font-bold my-3">{data.newsCount?.toLocaleString() || 0}</div>
           <Link href={'/news'}>
             <div className="text-blue-600 text-sm flex items-center">
               กิจกรรมทั้งหมด
