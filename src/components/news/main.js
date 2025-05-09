@@ -1,8 +1,13 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 const Main = ({ handleViewDetail }) => {
+    const router = useRouter();
+
     const [news, setNews] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortOrder, setSortOrder] = useState("newest");
@@ -58,15 +63,15 @@ const Main = ({ handleViewDetail }) => {
     };
 
     const handleAddNews = () => {
-        handleViewDetail(null);
+        router.push(`/news/null?mode=edit`);
     };
 
     const handleView = (item) => {
-        handleViewDetail(item);
+        router.push(`/news/${item.id}?mode=view`);
     };
 
     const handleEdit = (item) => {
-        handleViewDetail({ ...item, mode: "edit" });
+        router.push(`/news/${item.id}?mode=edit`);
     };
 
     const handleDelete = (item) => {
@@ -170,7 +175,7 @@ const Main = ({ handleViewDetail }) => {
                         ค้นหา
                     </button>
                     <button
-                        className="border border-green-500 text-green-500 rounded-md p-2 flex items-center"
+                        className="border border-green-500 cursor-pointer text-green-500 rounded-md p-2 flex items-center"
                         onClick={handleAddNews}
                     >
                         <span className="mr-1">+</span> กิจกรรม

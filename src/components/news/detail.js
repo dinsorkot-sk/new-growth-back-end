@@ -4,15 +4,18 @@ import { useState, useEffect } from "react";
 import dynamic from 'next/dynamic';
 import Cookies from 'js-cookie';
 import axios from 'axios'; // เพิ่มการนำเข้า axios
+import { useRouter } from "next/navigation";
+
 
 const QuillEditor = dynamic(() => import('../quillEditor'), {
     ssr: false,
     loading: () => <p>Loading editor...</p>,
 });
 
-const Detail = ({ news, onClose }) => {
-    // ตรวจสอบโหมดโดยตรง - ถ้ามี news.mode เป็น 'edit' หรือไม่มี news.id (สร้างใหม่) ให้เป็นโหมดแก้ไข
-    const [mode, setMode] = useState(news?.mode === 'edit' || !news?.id ? 'edit' : 'view');
+const Detail = ({ news, mode: initialMode }) => {
+    const router = useRouter();
+    // ตรวจสอบโหมดโดยตรง - ถ้ามี initialMode เป็น 'edit' หรือไม่มี news.id (สร้างใหม่) ให้เป็นโหมดแก้ไข
+    const [mode, setMode] = useState(initialMode === 'edit' || !news?.id ? 'edit' : 'view');
     const [imageFile, setImageFile] = useState(null);
     const [formData, setFormData] = useState({
         title: news?.title || "",
@@ -39,13 +42,11 @@ const Detail = ({ news, onClose }) => {
             });
 
             // เช็คเงื่อนไขเพื่อกำหนดโหมด:
-            // 1. ถ้า news.mode เป็น 'edit' หรือ
+            // 1. ถ้า initialMode เป็น 'edit' หรือ
             // 2. ไม่มี news.id (หมายถึงเป็นการสร้างใหม่)
-            setMode(news.mode === 'edit' || !news.id ? 'edit' : 'view');
-
-            console.log("Mode set to:", news.mode === 'edit' || !news.id ? 'edit' : 'view');
+            setMode(initialMode === 'edit' || !news.id ? 'edit' : 'view');
         }
-    }, [news]);
+    }, [news, initialMode]);
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
@@ -129,6 +130,10 @@ const Detail = ({ news, onClose }) => {
         const formatter = new Intl.DateTimeFormat("en-GB", { day: '2-digit', month: 'long', year: 'numeric' });
         return formatter.format(date)
     }
+
+    const onClose = () => {
+        router.back();
+    }   
 
     return (
         <div className="">
