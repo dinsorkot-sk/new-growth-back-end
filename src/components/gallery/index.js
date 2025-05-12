@@ -169,7 +169,8 @@ const Index = ({ initialRefType = "course" }) => {
     };
     
     // Add new image
-    const handleAddImage = async (newImageData, file) => {
+    const handleAddImage = async (newImageData, file,description) => {
+        console.log("เพิ่มรูปภาพใหม่:", description);
         try {
             setLoading(true);
             
@@ -178,7 +179,7 @@ const Index = ({ initialRefType = "course" }) => {
             formData.append('image', file);
             formData.append('ref_type', refType);
             formData.append('ref_id', newImageData.ref_id || null);
-            
+            formData.append('description', description);
             // Upload image to server
             const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_API}/image`,

@@ -308,6 +308,7 @@ const Main = ({
     });
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [description, setDescription] = useState("");
     
     const filteredImages = images.filter(image => 
         // Only filter client-side if searching
@@ -331,23 +332,52 @@ const Main = ({
         }
     };
     
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
         
-        if (!selectedFile) {
-            alert("กรุณาเลือกรูปภาพ");
-            return;
-        }
+    //     if (!selectedFile) {
+    //         alert("กรุณาเลือกรูปภาพ");
+    //         return;
+    //     }
         
-        onAddImage(newImage, selectedFile);
+    //     onAddImage(newImage, selectedFile);
         
-        // Reset form
-        setNewImage({
-            ref_id: null,
-            ref_type: refType
-        });
-        setSelectedFile(null);
+    //     // Reset form
+    //     setNewImage({
+    //         ref_id: null,
+    //         ref_type: refType
+    //     });
+    //     setSelectedFile(null);
+    // };
+
+     const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!selectedFile) {
+      alert("กรุณาเลือกรูปภาพ");
+      return;
+    }
+    if (!description) {
+      alert("กรุณากรอกรายละเอียด");
+      return;
+    }
+    
+    // Include the description in your newImage object
+    const imageData = {
+      ...newImage,
+      description: description
     };
+    
+    onAddImage(imageData, selectedFile,description);
+    
+    // Reset form
+    setNewImage({
+      ref_id: null,
+      ref_type: refType
+    });
+    setSelectedFile(null);
+    setDescription("");
+  };
 
     const toggleMenu = (index) => {
         if (openMenuIndex === index) {
@@ -616,7 +646,7 @@ const Main = ({
             )}
             
             {/* Add Image Modal */}
-            {showAddModal && (
+            {/* {showAddModal && (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg w-full max-w-xl shadow-xl transform transition-all animate-fade-in ">
             <div className="flex justify-between items-center border-b px-6 py-4 bg-gray-50 rounded-t-lg">
@@ -630,7 +660,7 @@ const Main = ({
             </div>
             
             <form onSubmit={handleSubmit} className="p-6">
-                {/* File Upload */}
+               
                 <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         อัพโหลดรูปภาพ <span className="text-red-500">*</span>
@@ -664,7 +694,7 @@ const Main = ({
                     </div>
                 </div>
                 
-                {/* Footer */}
+                
                 <div className="flex justify-end space-x-3 mt-8">
                     <button
                         type="button"
@@ -683,7 +713,94 @@ const Main = ({
             </form>
         </div>
     </div>
-)}
+)} */}
+
+ {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-xl shadow-xl transform transition-all animate-fade-in">
+            <div className="flex justify-between items-center border-b px-6 py-4 bg-gray-50 rounded-t-lg">
+              <h3 className="text-lg font-semibold text-gray-800">เพิ่มรูปภาพใหม่</h3>
+              <button 
+                onClick={onCloseModal} 
+                className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-1 rounded-full transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              {/* File Upload */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  อัพโหลดรูปภาพ <span className="text-red-500">*</span>
+                </label>
+                <div 
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-colors"
+                  onClick={() => document.getElementById('fileUpload').click()}
+                >
+                  {selectedFile ? (
+                    <>
+                      <Image className="h-12 w-12 text-green-500 mb-3" />
+                      <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {Math.round(selectedFile.size / 1024)} KB
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-12 w-12 text-gray-400 mb-3" />
+                      <p className="text-sm font-medium text-gray-700">คลิกเพื่ออัพโหลดรูปภาพ</p>
+                      <p className="text-xs text-gray-500 mt-1">PNG, JPG หรือ GIF (สูงสุด 5MB)</p>
+                    </>
+                  )}
+                  <input 
+                    type="file" 
+                    id="fileUpload" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                  />
+                </div>
+              </div>
+              
+              {/* Text Editor for Description */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  รายละเอียดรูปภาพ
+                </label>
+                <div className="border border-gray-300 rounded-lg">
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full min-h-32 p-3 rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="กรอกรายละเอียดของรูปภาพ..."
+                  />
+                  
+                </div>
+              
+              </div>
+              
+              {/* Footer */}
+              <div className="flex justify-end space-x-3 mt-8">
+                <button
+                  type="button"
+                  onClick={onCloseModal}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium shadow-sm transition-colors"
+                >
+                  เพิ่มรูปภาพ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
         </div>
     );
 };
