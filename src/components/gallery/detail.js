@@ -320,6 +320,7 @@ import { X, Download, Edit, Trash, ArrowLeft, Eye, Calendar, HardDrive, Maximize
 const Detail = ({ image, onClose, onDelete, baseUrl }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [description, setDescription] = useState(image.description || "");
+    const [isSaving, setIsSaving] = useState(false);
 
     const formatDate = (dateString) => {
         const options = { 
@@ -379,25 +380,64 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
         setIsEditing(true);
     };
     
-    const handleSaveEdit = async () => {
-        try {
-            // In a real implementation, you would call the API to update the image description
-            // For example:
-            // await axios.put(`${baseUrl}/api/image/update/${image.id}`, { description });
+    // const handleSaveEdit = async () => {
+    //     try {
+    //         // In a real implementation, you would call the API to update the image description
+    //         // For example:
+    //         // await axios.put(`${baseUrl}/api/image/update/${image.id}`, { description });
             
-            // Update local state
-            // In a real implementation, you would refresh data from API
-            // For now, we'll just close edit mode
+    //         // Update local state
+    //         // In a real implementation, you would refresh data from API
+    //         // For now, we'll just close edit mode
+    //         setIsEditing(false);
+            
+    //         // Show success message
+    //         alert("บันทึกรายละเอียดรูปภาพเรียบร้อย");
+    //     } catch (err) {
+    //         console.error("Error updating image description:", err);
+    //         alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
+    //     }
+    // };
+    
+    const handleSaveEdit = async () => {
+        console.log("Saving description:", description , image.id);
+        try {
+            setIsSaving(true);
+            
+            // Call API to update the image description
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/image/${image.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ description })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API responded with status: ${response.status}`);
+            }
+            
+            // Parse response data if needed
+            const updatedData = await response.json();
+            
+            // Close edit mode
             setIsEditing(false);
             
             // Show success message
             alert("บันทึกรายละเอียดรูปภาพเรียบร้อย");
+            
+            // ถ้าต้องการอัปเดตข้อมูลในหน้าจอโดยใช้ข้อมูลที่ได้รับกลับจาก API
+            // คุณสามารถเพิ่ม event callback เพื่อส่งข้อมูลกลับไปยัง parent component
+            // เช่น onImageUpdated(updatedData);
+            
         } catch (err) {
             console.error("Error updating image description:", err);
             alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
+        } finally {
+            setIsSaving(false);
         }
     };
-    
+
     const handleCancelEdit = () => {
         setIsEditing(false);
         setDescription(image.description || "");
@@ -524,12 +564,13 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                                     >
                                         ยกเลิก
                                     </button>
-                                    <button
+                                     <button
                                         type="button"
                                         onClick={handleSaveEdit}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm disabled:bg-blue-300"
+                                        disabled={isSaving}
                                     >
-                                        บันทึก
+                                        {isSaving ? "กำลังบันทึก..." : "บันทึก"}
                                     </button>
                                 </div>
                             </div>
