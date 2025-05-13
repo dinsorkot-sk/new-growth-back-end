@@ -15,15 +15,16 @@ const Main = ({ handleViewDetail }) => {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedNews, setSelectedNews] = useState(null);
     const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [pagination, setPagination] = useState({
         offset: 0,
         limit: 6,
         total: 0,
     });
 
-
     const fetchNews = async () => {
         try {
+            setIsLoading(true);
             const token = Cookies.get("auth-token");
             const params = {
                 offset: pagination.offset,
@@ -50,6 +51,8 @@ const Main = ({ handleViewDetail }) => {
         } catch (error) {
             console.error("Error fetching news:", error);
             alert("ดึงข้อมูลไม่สำเร็จ");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -122,18 +125,18 @@ const Main = ({ handleViewDetail }) => {
     }
 
     return (
-        <div className="p-4">
-            <div className="bg-white flex items-center p-5 w-full drop-shadow rounded-2xl my-3">
+        <div className="p-4 animate-fadeIn">
+            <div className="bg-white flex items-center p-5 w-full drop-shadow rounded-2xl my-3 transform transition-all duration-300 hover:shadow-lg">
                 <h1 className="text-2xl font-semibold">ข่าวสาร & กิจกรรม</h1>
             </div>
 
             {/* ส่วนค้นหาและตัวกรอง */}
-            <div className="flex gap-4 mb-6 bg-white items-center p-5 w-full drop-shadow rounded-2xl my-3">
+            <div className="flex gap-4 mb-6 bg-white items-center p-5 w-full drop-shadow rounded-2xl my-3 transform transition-all duration-300 hover:shadow-lg">
                 {/* ช่องค้นหา */}
                 <input
                     type="text"
                     placeholder="ค้นหาหลักสูตร"
-                    className="border border-gray-300 rounded-md p-2 px-4 flex-grow"
+                    className="border border-gray-300 rounded-md p-2 px-4 flex-grow transition-all duration-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -141,7 +144,7 @@ const Main = ({ handleViewDetail }) => {
                 {/* ตัวเลือกการเรียงลำดับ */}
                 <div className="w-64">
                     <select
-                        className="border border-gray-300 rounded-md p-2 px-4 w-full appearance-none bg-white"
+                        className="border border-gray-300 rounded-md p-2 px-4 w-full appearance-none bg-white transition-all duration-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         style={{ backgroundImage: "url('data:image/svg+xml;charset=US-ASCII,<svg width=\"24\" height=\"24\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M7 10l5 5 5-5z\" fill=\"black\"/></svg>')", backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center" }}
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
@@ -154,7 +157,7 @@ const Main = ({ handleViewDetail }) => {
                 {/* ตัวเลือกหมวดหมู่ */}
                 <div className="w-64">
                     <select
-                        className="border border-gray-300 rounded-md p-2 px-4 w-full appearance-none bg-white"
+                        className="border border-gray-300 rounded-md p-2 px-4 w-full appearance-none bg-white transition-all duration-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         style={{ backgroundImage: "url('data:image/svg+xml;charset=US-ASCII,<svg width=\"24\" height=\"24\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M7 10l5 5 5-5z\" fill=\"black\"/></svg>')", backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center" }}
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
@@ -169,102 +172,117 @@ const Main = ({ handleViewDetail }) => {
                 {/* ส่วนของปุ่มค้นหาและสร้างข่าวใหม่ */}
                 <div className="flex justify-center gap-4">
                     <button
-                        className="bg-green-500 hover:bg-green-400 cursor-pointer text-white rounded-md px-6 py-2"
+                        className="bg-green-500 hover:bg-green-400 cursor-pointer text-white rounded-md px-6 py-2 transition-all duration-300 transform hover:scale-105"
                         onClick={handleSearch}
                     >
                         ค้นหา
                     </button>
                     <button
-                        className="border border-green-500 cursor-pointer text-green-500 rounded-md p-2 flex items-center"
+                        className="border border-green-500 cursor-pointer text-green-500 rounded-md p-2 flex items-center transition-all duration-300 transform hover:scale-105 hover:bg-green-50"
                         onClick={handleAddNews}
                     >
-                        <span className="mr-1">+</span> กิจกรรม
+                        <span className="mr-1">เพิ่ม</span> กิจกรรม
                     </button>
                 </div>
             </div>
 
-            {/* ส่วนแสดงรายการข่าว */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {news.length > 0 ? (
-                    news.map((item) => (
-                        <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                            {/* ส่วนภาพ */}
-                            <div className="bg-gray-200 h-64 w-full relative">
-                                {item.image?.image_path ? (
-                                    <img
-                                        src={`${process.env.NEXT_PUBLIC_IMG}/${item.image.image_path}`}
-                                        alt={item.title}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                                        <span className="text-gray-500">ไม่มีรูปภาพ</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* ส่วนเนื้อหา */}
+            {/* Loading Skeleton */}
+            {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, index) => (
+                        <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+                            <div className="bg-gray-200 h-64 w-full"></div>
                             <div className="p-6">
-                                <h3 className="font-bold text-2xl mb-2">{item.title}</h3>
-
-                                <div className="flex justify-between items-center mb-3">
-                                    <div className="text-gray-500">{dateFormatter(item.published_date)}</div>
-                                    <div className="text-gray-500">{item.view_count} คนอ่าน</div>
+                                <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                                <div className="h-4 bg-gray-200 rounded w-full mb-4"></div>
+                                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                /* ส่วนแสดงรายการข่าว */
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {news.length > 0 ? (
+                        news.map((item) => (
+                            <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                                {/* ส่วนภาพ */}
+                                <div className="bg-gray-200 h-64 w-full relative overflow-hidden">
+                                    {item.image?.image_path ? (
+                                        <img
+                                            src={`${process.env.NEXT_PUBLIC_IMG}/${item.image.image_path}`}
+                                            alt={item.title}
+                                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                                            <span className="text-gray-500">ไม่มีรูปภาพ</span>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <p className="text-gray-700 mb-4">{item.short_description}</p>
+                                {/* ส่วนเนื้อหา */}
+                                <div className="p-6">
+                                    <h3 className="font-bold text-2xl mb-2 transition-colors duration-300 hover:text-green-600">{item.title}</h3>
 
-                                <div className="flex justify-between items-center">
-                                    <div className="flex flex-row">
-                                        {item?.tagAssignments.map((data) => (
-                                            <button
-                                                key={data.id}
-                                                className="bg-green-100 text-green-600 px-4 py-1 rounded-md text-sm mr-2 mb-2"
-                                            >
-                                                {data?.tag?.name}
-                                            </button>
-                                        ))}
+                                    <div className="flex justify-between items-center mb-3">
+                                        <div className="text-gray-500">{dateFormatter(item.published_date)}</div>
+                                        <div className="text-gray-500">{item.view_count} คนอ่าน</div>
                                     </div>
-                                    <div className="flex space-x-2">
+
+                                    <p className="text-gray-700 mb-4">{item.short_description}</p>
+
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex flex-row flex-wrap">
+                                            {item?.tagAssignments.map((data) => (
+                                                <button
+                                                    key={data.id}
+                                                    className="bg-green-100 text-green-600 px-4 py-1 rounded-md text-sm mr-2 mb-2 transition-all duration-300 hover:bg-green-200"
+                                                >
+                                                    {data?.tag?.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div className="flex space-x-2">
+                                            <button
+                                                className="w-auto h-8 flex items-center justify-center rounded-md transition-colors duration-300 hover:text-green-600"
+                                            >
+                                                <span className="text-green-500 underline">อ่านแล้ว</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex space-x-2 mt-4">
                                         <button
-                                            className="w-auto h-8 flex items-center justify-center rounded-md"
+                                            className="w-8 h-8 rounded-md cursor-pointer bg-blue-500 hover:bg-blue-300 px-2 flex items-center justify-center text-white text-sm transition-all duration-300 transform hover:scale-110"
+                                            onClick={() => handleView(item)}
                                         >
-                                            <span className="text-green-500 underline">อ่านแล้ว</span>
+                                            ดู
+                                        </button>
+                                        <button
+                                            className="w-8 h-8 rounded-md cursor-pointer bg-yellow-400 hover:bg-yellow-300 px-2 flex items-center justify-center text-white text-sm transition-all duration-300 transform hover:scale-110"
+                                            onClick={() => handleEdit(item)}
+                                        >
+                                            แก้ไข
+                                        </button>
+                                        <button
+                                            className="w-8 h-8 rounded-md cursor-pointer bg-red-500 hover:bg-red-400 px-2 flex items-center justify-center text-white text-sm transition-all duration-300 transform hover:scale-110"
+                                            onClick={() => handleDelete(item)}
+                                        >
+                                            ลบ
                                         </button>
                                     </div>
                                 </div>
-
-                                <div className="flex space-x-2 mt-4">
-                                    <button
-                                        className="w-8 h-8 rounded-md cursor-pointer bg-blue-500 hover:bg-blue-300 px-2 flex items-center justify-center text-white text-sm"
-                                        onClick={() => handleView(item)}
-                                    >
-                                        ดู
-                                    </button>
-                                    <button
-                                        className="w-8 h-8 rounded-md cursor-pointer bg-yellow-400 hover:bg-yellow-300 px-2 flex items-center justify-center text-white text-sm"
-                                        onClick={() => handleEdit(item)}
-                                    >
-                                        แก้ไข
-                                    </button>
-                                    <button
-                                        data-modal-target="default-modal" 
-                                        data-modal-toggle="default-modal"
-                                        className="w-8 h-8 rounded-md cursor-pointer bg-red-500 hover:bg-red-400 px-2 flex items-center justify-center text-white text-sm"
-                                        onClick={() => handleDelete(item)}
-                                    >
-                                        ลบ
-                                    </button>
-                                </div>
                             </div>
+                        ))
+                    ) : (
+                        <div className="col-span-3 text-center py-10">
+                            <p className="text-gray-500">ไม่พบข้อมูลข่าวสารหรือกิจกรรม</p>
                         </div>
-                    ))
-                ) : (
-                    <div className="col-span-3 text-center py-10">
-                        <p className="text-gray-500">ไม่พบข้อมูลข่าวสารหรือกิจกรรม</p>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
 
             {/* ส่วนเลขหน้า */}
             {totalPages > 1 && (
@@ -272,7 +290,7 @@ const Main = ({ handleViewDetail }) => {
                     <button
                         onClick={() => handlePagination("prev")}
                         disabled={currentPage === 1}
-                        className="border rounded-md w-8 h-8 flex items-center justify-center disabled:opacity-50"
+                        className="border rounded-md w-8 h-8 flex items-center justify-center disabled:opacity-50 transition-all duration-300 hover:bg-gray-100"
                     >
                         &lt;
                     </button>
@@ -284,8 +302,9 @@ const Main = ({ handleViewDetail }) => {
                                 ...prev,
                                 offset: i * pagination.limit
                             }))}
-                            className={`border rounded-md w-8 h-8 flex items-center justify-center ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""
-                                }`}
+                            className={`border rounded-md w-8 h-8 flex items-center justify-center transition-all duration-300 hover:bg-gray-100 ${
+                                currentPage === i + 1 ? "bg-blue-500 text-white hover:bg-blue-600" : ""
+                            }`}
                         >
                             {i + 1}
                         </button>
@@ -294,7 +313,7 @@ const Main = ({ handleViewDetail }) => {
                     <button
                         onClick={() => handlePagination("next")}
                         disabled={currentPage === totalPages}
-                        className="border rounded-md w-8 h-8 flex items-center justify-center disabled:opacity-50"
+                        className="border rounded-md w-8 h-8 flex items-center justify-center disabled:opacity-50 transition-all duration-300 hover:bg-gray-100"
                     >
                         &gt;
                     </button>
@@ -303,8 +322,8 @@ const Main = ({ handleViewDetail }) => {
 
             {/* Modal ยืนยันการลบ */}
             {deleteModalOpen && selectedNews && (
-                <div className="fixed inset-0 bg-gray-500/75 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg w-full max-w-md p-6">
+                <div className="fixed inset-0 bg-gray-500/75 flex items-center justify-center z-50 animate-fadeIn">
+                    <div className="bg-white rounded-lg w-full max-w-md p-6 transform transition-all duration-300 animate-scaleIn">
                         <div className="text-center mb-6">
                             <h2 className="text-2xl font-bold mb-4">ยืนยันการลบ</h2>
                             <p className="text-gray-600">
@@ -318,13 +337,13 @@ const Main = ({ handleViewDetail }) => {
                         <div className="flex justify-center space-x-3">
                             <button
                                 onClick={() => setDeleteModalOpen(false)}
-                                className="border border-gray-300 cursor-pointer text-gray-700 px-6 py-2 rounded-md"
+                                className="border border-gray-300 cursor-pointer text-gray-700 px-6 py-2 rounded-md transition-all duration-300 hover:bg-gray-100"
                             >
                                 ยกเลิก
                             </button>
                             <button
                                 onClick={confirmDelete}
-                                className="bg-red-500 hover:bg-red-400 cursor-pointer text-white px-6 py-2 rounded-md"
+                                className="bg-red-500 hover:bg-red-400 cursor-pointer text-white px-6 py-2 rounded-md transition-all duration-300 transform hover:scale-105"
                             >
                                 ลบ
                             </button>

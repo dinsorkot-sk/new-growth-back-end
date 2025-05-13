@@ -317,11 +317,25 @@
 import { useState } from "react";
 import { X, Download, Edit, Trash, ArrowLeft, Eye, Calendar, HardDrive, Maximize, User } from "lucide-react";
 
+const LoadingSpinner = () => (
+  <div className="flex flex-col items-center justify-center min-h-[400px] animate-fadeIn">
+    <div className="relative w-16 h-16">
+      <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-200 rounded-full"></div>
+      <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
+    </div>
+    <p className="mt-4 text-gray-600 animate-pulse">กำลังโหลดข้อมูลรูปภาพ...</p>
+  </div>
+);
+
 const Detail = ({ image, onClose, onDelete, baseUrl }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [description, setDescription] = useState(image.description || "");
     const [isSaving, setIsSaving] = useState(false);
 
+    const [editData, setEditData] = useState({
+        ref_id: image?.ref_id
+    });
+    
     const formatDate = (dateString) => {
         const options = { 
             year: 'numeric', 
@@ -347,7 +361,7 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
 
     const handleDownload = () => {
         // สร้าง URL ของรูปภาพ
-        const imageUrl = `${baseUrl}${image.image_path}`;
+        const imageUrl = `${baseUrl}/${image.image_path}`;
         
         // ใช้ fetch เพื่อดาวน์โหลดรูปภาพเป็น Blob
         fetch(imageUrl)
@@ -452,23 +466,26 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
         return types[refType] || refType;
     };
 
+    if (!image) {
+        return <LoadingSpinner />;
+    }
+
     return (
-        <div className="bg-white rounded-2xl drop-shadow">
+        <div className="bg-white rounded-2xl drop-shadow-lg animate-fadeIn max-w-4xl mx-auto my-8 border border-gray-100">
             {/* Header */}
-            <div className="flex justify-between items-center p-5 border-b">
+            <div className="flex justify-between items-center p-5 border-b bg-gradient-to-r from-blue-50 to-white rounded-t-2xl">
                 <div className="flex items-center">
                     <button 
                         onClick={onClose}
-                        className="flex items-center text-gray-500 hover:text-gray-700 mr-4"
+                        className="flex items-center text-gray-500 hover:text-blue-600 mr-4 transition-colors"
                     >
                         <ArrowLeft className="h-5 w-5" />
                     </button>
-                    <h2 className="text-xl font-semibold">รายละเอียดรูปภาพ</h2>
+                    <h2 className="text-xl font-semibold text-blue-700 tracking-wide">รายละเอียดรูปภาพ</h2>
                 </div>
-                
                 <div className="flex items-center space-x-4">
                     <button 
-                        className="text-blue-500 hover:text-blue-700"
+                        className="text-blue-500 hover:text-blue-700 transition-colors"
                         onClick={handleDownload}
                     >
                         <Download className="h-5 w-5" />
@@ -480,31 +497,29 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                         <Edit className="h-5 w-5" />
                     </button>
                     <button 
-                        className="text-red-500 hover:text-red-700"
+                        className="text-red-500 hover:text-red-700 transition-colors"
                         onClick={() => onDelete(image)}
                     >
                         <Trash className="h-5 w-5" />
                     </button>
                 </div>
             </div>
-            
             {/* Content */}
             <div className="p-6 flex flex-col md:flex-row gap-8">
                 {/* Image Preview */}
                 <div className="md:w-1/2">
-                    <div className="bg-gray-100 rounded-lg flex items-center justify-center p-2 h-80">
+                    <div className="bg-gray-100 rounded-lg flex items-center justify-center p-2 h-80 shadow-inner animate-fadeInImg">
                         <img 
-                            src={`${baseUrl}${image.image_path}`} 
+                            src={`${baseUrl}/${image.image_path}`} 
                             alt={`รูปภาพ ${image.id}`}
-                            className="max-w-full max-h-full object-contain rounded"
+                            className="max-w-full max-h-full object-contain rounded transition-all duration-500 shadow-lg"
                             onError={(e) => {
                                 e.target.onerror = null;
                                 e.target.src = `/api/placeholder/600/400`;
                             }}
                         />
                     </div>
-                    
-                    <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+                    <div className="mt-4 bg-gray-50 p-4 rounded-lg shadow-sm">
                         <h3 className="font-medium text-gray-700 mb-3">ข้อมูลไฟล์</h3>
                         <div className="grid grid-cols-2 gap-y-2 text-sm">
                             <div className="flex items-center text-gray-500">
@@ -512,25 +527,21 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                                 <span>ชื่อไฟล์:</span>
                             </div>
                             <span>{image.image_path.split('/').pop()}</span>
-                            
                             <div className="flex items-center text-gray-500">
                                 <Maximize className="h-4 w-4 mr-1" />
                                 <span>ความละเอียด:</span>
                             </div>
                             <span>{getImageDimensions(image.image_path)}</span>
-                            
                             <div className="flex items-center text-gray-500">
                                 <Calendar className="h-4 w-4 mr-1" />
                                 <span>วันที่อัพโหลด:</span>
                             </div>
                             <span>{formatDate(image.created_at)}</span>
-                            
                             <div className="flex items-center text-gray-500">
                                 <User className="h-4 w-4 mr-1" />
                                 <span>ประเภท:</span>
                             </div>
                             <span>{refTypeToLabel(image.ref_type)}</span>
-                            
                             <div className="flex items-center text-gray-500">
                                 <Eye className="h-4 w-4 mr-1" />
                                 <span>ID อ้างอิง:</span>
@@ -539,7 +550,6 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                         </div>
                     </div>
                 </div>
-                
                 {/* Image Information */}
                 <div className="md:w-1/2">
                     <div className="bg-gray-50 rounded-lg p-5">
@@ -601,7 +611,7 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                                 URL สำหรับใช้งาน:
                             </p>
                             <div className="bg-gray-100 p-2 rounded text-sm font-mono break-all">
-                                {`${baseUrl}${image.image_path}`}
+                                {`${baseUrl}/${image.image_path}`}
                             </div>
                         </div>
                         

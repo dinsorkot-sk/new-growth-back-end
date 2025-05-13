@@ -1,5 +1,6 @@
 import Sidebar from "@/components/sidebar";
 import Detail from "@/components/news/detail";
+import axios from "axios";
 
 export const metadata = {
     title: "News",
@@ -14,12 +15,9 @@ const page = async ({ params, searchParams }) => {
     let news = null;
     if (id) {
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/news/${id}`, {
-                cache: 'no-store'
-            });
-            if (response.ok) {
-                news = await response.json();
-            }
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/news/${id}`);
+            news = response.data;
+            console.log(news);
         } catch (error) {
             console.error('Error fetching news:', error);
         }

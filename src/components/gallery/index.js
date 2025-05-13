@@ -110,7 +110,7 @@ const Index = ({ initialRefType = "course" }) => {
             setLoading(true);
             const { offset, limit } = pagination;
             const response = await axios.get(
-               `${process.env.NEXT_PUBLIC_IMG}api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`
+               `${process.env.NEXT_PUBLIC_IMG}/api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`
             );
             
             setImages(response.data.images || []);

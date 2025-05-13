@@ -17,14 +17,6 @@ export default function QuillEditor({ value = '', readOnly = false, onChange }) 
               theme: 'snow',
               readOnly: readOnly,
               modules: {
-                // toolbar: readOnly ? true : [
-                //   ['bold', 'italic', 'underline', 'strike'],
-                //   [{ 'header': 1 }, { 'header': 2 }],
-                //   [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                //   [{ 'color': [] }, { 'background': [] }],
-                //   ['link', 'image']
-                //               ]
-
                 toolbar: [
                   ['bold', 'italic', 'underline', 'strike'],
                   ['blockquote', 'code-block'],
@@ -97,8 +89,7 @@ export default function QuillEditor({ value = '', readOnly = false, onChange }) 
         id="editor"
         ref={editorRef}
         style={{ 
-          minHeight: '300px', 
-          maxHeight: '500px',
+          minHeight: '300px',
           marginBottom: '50px' 
         }} 
       />

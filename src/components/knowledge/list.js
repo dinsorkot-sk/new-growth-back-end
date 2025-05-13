@@ -170,7 +170,7 @@ const handlePageChange = (page) => {
 };
 
   return (
-    <div className="bg-white rounded-md shadow-sm">
+    <div className="bg-white rounded-md shadow-sm animate-fadeIn">
       <div className="flex justify-between items-center p-4 border-b border-gray-300">
         <h1 className="text-xl font-medium">คลังความรู้ออนไลน์</h1>
         <button
@@ -216,8 +216,13 @@ const handlePageChange = (page) => {
 
       <div className="p-4">
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">
-            กำลังโหลดข้อมูล...
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="loading-bounce mb-4">
+              <span className="loading-bounce-dot"></span>
+              <span className="loading-bounce-dot"></span>
+              <span className="loading-bounce-dot"></span>
+            </div>
+            <div className="text-gray-500 text-lg font-medium animate-fadeIn">กำลังโหลดข้อมูล...</div>
           </div>
         ) : filteredDocuments.length === 0 ? (
           <div className="text-center py-8 text-gray-500">

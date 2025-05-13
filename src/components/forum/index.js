@@ -245,19 +245,10 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
                         className="bg-white border border-green-500 text-green-500 hover:bg-green-50 px-4 py-2 rounded-lg transition-colors flex items-center gap-1"
                         onClick={handleAddQuestion}
                     >
-                        <span>+</span> <span>เพิ่มกระดู่คำถาม</span>
+                        <span>เพิ่ม กระทู้คำถาม</span>
                     </button>
                 </div>
             </div>
-            
-            {/* Category Grid - ถ้ามีข้อมูล categories ให้แสดง */}
-            {/* {categories && (
-                <CategoryList 
-                    categories={categories} 
-                    selectedCategory={selectedCategory}
-                    onSelectCategory={handleCategorySelect}
-                />
-            )} */}
             
             {/* Loading Indicator */}
             {isLoading && (
