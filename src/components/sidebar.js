@@ -9,7 +9,7 @@ const Sidebar = () => {
 
     const menuItems = [
         { name: "Dashboard", href: "/dashboard" },
-        { name: "จัดการหลักสูตร", href: "/courses" },
+        { name: "จัดการเนื้อหา", href: "/courses" },
         { name: "ข่าวสาร & กิจกรรม", href: "/news" },
         { name: "กระทู้คำถาม", href: "/forum" },
         { name: "คลังรูปภาพ", href: "/gallery" },

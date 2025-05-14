@@ -19,7 +19,7 @@ const renderStars = (rating) => {
   const decimalPart = rating % 1;
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center justify-center">
       {/* ดาวเต็ม */}
       {[...Array(fullStars)].map((_, index) => (
         <svg
@@ -83,7 +83,7 @@ const Detail = ({ courseId }) => {
 
   const [form, setForm] = useState(initialFormState);
 
-  // ดึงข้อมูลหลักสูตร (เมื่อมี courseId)
+  // ดึงข้อมูลเนื้อหา (เมื่อมี courseId)
   useEffect(() => {
     fetchCourse();
   }, [courseId]);
@@ -313,7 +313,7 @@ const Detail = ({ courseId }) => {
                     ? "กำลังบันทึก..."
                     : courseId
                     ? "บันทึกการเปลี่ยนแปลง"
-                    : "สร้างหลักสูตร"}
+                    : "สร้างเนื้อหา"}
                 </button>
                 <button
                   onClick={handleCancel}
@@ -353,16 +353,16 @@ const Detail = ({ courseId }) => {
           </div>
 
           <div className="flex flex-col md:flex-row items-center justify-center gap-10">
-            <div className="text-center">
+            <div className="text-center w-[30%]">
               <h1 className="text-2xl mb-2">
                 {mode === "view" ? (
-                  course?.name || "หลักสูตรใหม่"
+                  course?.name || "เนื้อหาใหม่"
                 ) : (
                   <input
                     value={form.name}
                     onChange={(e) => handleChange("name", e.target.value)}
                     className="border-b text-center w-full"
-                    placeholder="ชื่อหลักสูตร"
+                    placeholder="ชื่อเนื้อหา"
                   />
                 )}
               </h1>
@@ -411,17 +411,24 @@ const Detail = ({ courseId }) => {
                       >
                         {selectedVideo ? (
                           <video
-                            src={URL.createObjectURL(selectedVideo)}
                             className="w-full h-full object-cover"
                             controls
-                          />
+                            preload="metadata"
+                            playsInline
+                          >
+                            <source
+                              src={URL.createObjectURL(selectedVideo)}
+                              type="video/mp4"
+                            />
+                            ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
+                          </video>
                         ) : course?.resources ? (
                           <video
                             className="w-full h-full object-cover"
                             controls
                             autoPlay
                             preload="auto"
-                            poster={`${process.env.NEXT_PUBLIC_IMG}/${
+                            poster={`${process.env.NEXT_PUBLIC_IMG}${
                               course.resources.poster_path ||
                               "/default-poster.jpg"
                             }`}
@@ -468,9 +475,9 @@ const Detail = ({ courseId }) => {
 
         {/* ส่วนเนื้อหาหลัก */}
         <div className="flex flex-col-reverse md:flex-row p-5 gap-5">
-          {/* คอลัมน์ซ้าย - เนื้อหาหลักสูตร */}
+          {/* คอลัมน์ซ้าย - เนื้อหาเนื้อหา */}
           <div className="flex-1">
-            <h2 className="text-xl font-bold mb-4">เนื้อหาหลักสูตร</h2>
+            <h2 className="text-xl font-bold mb-4">เนื้อหาเนื้อหา</h2>
 
             {mode === "view" ? (
               <div dangerouslySetInnerHTML={{ __html: form.sub_description }} />

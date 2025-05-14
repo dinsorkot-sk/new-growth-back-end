@@ -182,16 +182,22 @@ const DocumentIndex = () => {
   const handleDownload = async (id, fileName) => {
     try {
       console.log("download", id);
+      // Ensure the API URL is properly formatted
+      const downloadUrl = `${process.env.NEXT_PUBLIC_IMG}/api/video/downloadVideo/${id}`;
+      
       // ทำการเรียก API เพื่อดาวน์โหลดไฟล์
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_IMG}api/video/downloadVideo/${id}`,
-        {
-          responseType: "blob", // สำคัญมาก - ต้องระบุ responseType เป็น 'blob' สำหรับการดาวน์โหลดไฟล์
-        }
-      );
+      const response = await axios.get(downloadUrl, {
+        responseType: "blob", // สำคัญมาก - ต้องระบุ responseType เป็น 'blob' สำหรับการดาวน์โหลดไฟล์
+      });
+
+      // Check if we have valid response data
+      if (!response.data) {
+        throw new Error("No data received from server");
+      }
 
       // สร้าง URL object จาก blob response
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
 
       // สร้าง element <a> สำหรับดาวน์โหลด
       const link = document.createElement("a");

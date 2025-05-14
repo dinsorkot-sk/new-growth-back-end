@@ -71,7 +71,7 @@ const Main = () => {
 
   const limit = 8; // จำนวนคอร์สต่อหน้า
 
-  // ดึงข้อมูลหลักสูตร
+  // ดึงข้อมูลเนื้อหา
   const fetchCourses = async () => {
     try {
       setLoading(true);
@@ -153,7 +153,7 @@ const Main = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#26A65B] focus:border-[#26A65B]"
-            placeholder="ค้นหาหลักสูตร"
+            placeholder="ค้นหาเนื้อหา"
           />
         </div>
 
@@ -188,14 +188,14 @@ const Main = () => {
             onClick={fetchCourses}
             className="w-full bg-[#26A65B] text-white rounded-lg px-3 py-2 hover:bg-[#1F8347] transition-colors"
           >
-            ค้นหาหลักสูตร
+            ค้นหาเนื้อหา
           </button>
 
           <button
             onClick={() => handleViewDetail(null)}
             className="w-full border-2 border-[#26A65B] text-[#26A65B] rounded-lg px-3 py-2 hover:bg-[#26A65B]/10 transition-colors"
           >
-            เพิ่มหลักสูตร
+            เพิ่มเนื้อหา
           </button>
 
         </div>
