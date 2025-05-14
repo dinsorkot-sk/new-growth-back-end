@@ -15,6 +15,7 @@ const Sidebar = () => {
         { name: "คลังรูปภาพ", href: "/gallery" },
         { name: "คลังความรู้ออนไลน์", href: "/knowledge" },
         { name: "การรับสมัคร", href: "/admission" },
+        { name: "จัดการแอดมิน", href: "/admin" },
         { name: "ออกจากระบบ", href: "/login" },
     ];
 
