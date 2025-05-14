@@ -7,31 +7,80 @@ const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
     const searchParams = useSearchParams();
     const questionId = searchParams.get('questionId');
     const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    const [confirmDeleteTopic, setConfirmDeleteTopic] = useState(null);
+
+    const handleDeleteTopic = async (topicId) => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/topic/${topicId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error(`ไม่สามารถลบกระทู้ได้: ${response.statusText}`);
+            }
+
+            // Refresh the page or update the questions list
+            window.location.reload();
+        } catch (error) {
+            console.error("เกิดข้อผิดพลาดในการลบกระทู้:", error);
+            alert(error.message);
+        }
+    };
 
     return (
-        <div className="bg-white rounded-2xl overflow-hidden drop-shadow">
-            {questions.length > 0 ? (
-                questions.map((question, index) => (
-                    <QuestionItem 
-                        key={question.id} 
-                        question={question} 
-                        isLast={index === questions.length - 1}
-                        onUpdateAnswerStatus={onUpdateAnswerStatus}
-                        onDeleteAnswer={onDeleteAnswer}
-                        isAutoExpanded={questionId && question.id.toString() === questionId}
-                        targetAnswerId={hash.replace('#answer-', '')}
-                    />
-                ))
-            ) : (
-                <div className="p-8 text-center text-gray-500">
-                    ไม่พบคำถามที่ตรงกับเงื่อนไขที่เลือก
+        <>
+            <div className="bg-white rounded-2xl overflow-hidden drop-shadow">
+                {questions.length > 0 ? (
+                    questions.map((question, index) => (
+                        <QuestionItem 
+                            key={question.id} 
+                            question={question} 
+                            isLast={index === questions.length - 1}
+                            onUpdateAnswerStatus={onUpdateAnswerStatus}
+                            onDeleteAnswer={onDeleteAnswer}
+                            isAutoExpanded={questionId && question.id.toString() === questionId}
+                            targetAnswerId={hash.replace('#answer-', '')}
+                            onDeleteTopic={handleDeleteTopic}
+                            setConfirmDeleteTopic={setConfirmDeleteTopic}
+                        />
+                    ))
+                ) : (
+                    <div className="p-8 text-center text-gray-500">
+                        ไม่พบคำถามที่ตรงกับเงื่อนไขที่เลือก
+                    </div>
+                )}
+            </div>
+
+            {confirmDeleteTopic && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-80">
+                        <h3 className="text-lg font-semibold mb-4">ยืนยันการลบกระทู้</h3>
+                        <p className="text-gray-600 mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบกระทู้นี้? การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                                onClick={() => setConfirmDeleteTopic(null)}
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                onClick={() => {
+                                    handleDeleteTopic(confirmDeleteTopic);
+                                    setConfirmDeleteTopic(null);
+                                }}
+                            >
+                                ยืนยัน
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 
-const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, isAutoExpanded, targetAnswerId }) => {
+const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, isAutoExpanded, targetAnswerId, onDeleteTopic, setConfirmDeleteTopic }) => {
     const [isOpen, setIsOpen] = useState(isAutoExpanded);
     const [confirmDelete, setConfirmDelete] = useState(null);
 
@@ -92,8 +141,20 @@ const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, 
                         <span>{question.answers?.length || 0} คำตอบ</span>
                     </div>
                 </div>
-                <div className="text-gray-500">
-                    {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                <div className="flex items-center gap-2">
+                    <button
+                        className="p-1 rounded hover:bg-gray-100 text-red-500"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDeleteTopic(question.id);
+                        }}
+                        title="ลบกระทู้"
+                    >
+                        <Trash2 size={20} />
+                    </button>
+                    <div className="text-gray-500">
+                        {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </div>
                 </div>
             </div>
 

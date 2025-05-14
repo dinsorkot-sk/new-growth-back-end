@@ -35,9 +35,18 @@ const DocumentList = ({
       const matchesSearch =
         doc.title &&
         doc.title.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Get file type from files array or fallback to document type
+      const docFileType = doc.files?.[0]?.file_type?.toLowerCase() || doc.type?.toLowerCase();
+      
       const matchesType =
         typeFilter === "" ||
-        (doc.type && doc.type.toLowerCase() === typeFilter.toLowerCase());
+        (typeFilter === "pdf" && docFileType === "pdf") ||
+        (typeFilter === "video" && (docFileType === "video" || docFileType === "mp4")) ||
+        (typeFilter === "image" && ["jpg", "jpeg", "png", "gif"].includes(docFileType)) ||
+        (typeFilter === "document" && ["doc", "docx"].includes(docFileType)) ||
+        (typeFilter === "other" && !["pdf", "video", "mp4", "jpg", "jpeg", "png", "gif", "doc", "docx"].includes(docFileType) && docFileType !== undefined);
+      
       return matchesSearch && matchesType;
     });
     setFilteredDocuments(filtered);
@@ -54,26 +63,73 @@ const DocumentList = ({
   };
 
   // ฟังก์ชันแสดงไอคอนตามประเภทเอกสาร
-  const renderTypeIcon = (type) => {
-    switch (type?.toLowerCase()) {
+  const renderTypeIcon = (document) => {
+    const fileType = document.files?.[0]?.file_type?.toLowerCase() || document.type?.toLowerCase();
+    
+    switch (fileType) {
+      case "mp4":
       case "video":
         return <Video className="text-blue-500 mr-2" size={18} />;
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
       case "image":
         return <FileImage className="text-purple-500 mr-2" size={18} />;
+      case "pdf":
+        return <FileText className="text-red-500 mr-2" size={18} />;
+      case "doc":
+      case "docx":
+      case "document":
+        return <FileText className="text-gray-500 mr-2" size={18} />;
       default:
         return <FileText className="text-gray-500 mr-2" size={18} />;
     }
   };
 
+  // ฟังก์ชันสำหรับแปลงประเภทไฟล์เป็นภาษาไทย
+  const getFileTypeInThai = (document) => {
+    const fileType = document.files?.[0]?.file_type?.toLowerCase() || document.type?.toLowerCase();
+    
+    switch (fileType) {
+      case "mp4":
+      case "video":
+        return "วิดีโอ";
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+      case "image":
+        return "รูปภาพ";
+      case "pdf":
+        return "PDF";
+      case "doc":
+      case "docx":
+      case "document":
+        return "เอกสาร";
+      default:
+        return "อื่นๆ";
+    }
+  };
+
   // ฟังก์ชันสำหรับกำหนดสีของ badge ตามประเภทไฟล์
-  const getTypeBadgeColor = (type) => {
-    switch (type?.toLowerCase()) {
+  const getTypeBadgeColor = (document) => {
+    const fileType = document.files?.[0]?.file_type?.toLowerCase() || document.type?.toLowerCase();
+    
+    switch (fileType) {
+      case "mp4":
       case "video":
         return "bg-blue-100 text-blue-800";
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
       case "image":
         return "bg-purple-100 text-purple-800";
       case "pdf":
         return "bg-red-100 text-red-800";
+      case "doc":
+      case "docx":
       case "document":
         return "bg-green-100 text-green-800";
       default:
@@ -207,6 +263,7 @@ const handlePageChange = (page) => {
               <option value="">ทั้งหมด</option>
               <option value="video">วิดีโอ</option>
               <option value="image">รูปภาพ</option>
+              <option value="pdf">PDF</option>
               <option value="document">เอกสาร</option>
               <option value="other">อื่นๆ</option>
             </select>
@@ -257,7 +314,7 @@ const handlePageChange = (page) => {
                   <tr key={document.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        {renderTypeIcon(document.type)}
+                        {renderTypeIcon(document)}
                         <span
                           className="text-blue-600 hover:text-blue-800 cursor-pointer"
                           onClick={() => onView(document)}
@@ -269,10 +326,10 @@ const handlePageChange = (page) => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeBadgeColor(
-                          document.type
+                          document
                         )}`}
                       >
-                        {document.type}
+                        {getFileTypeInThai(document)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

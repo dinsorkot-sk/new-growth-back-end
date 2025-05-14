@@ -18,11 +18,14 @@ const AdminTable = () => {
   const fetchAdmins = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API}`);
-      setAdmins(response.data);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/get-all-admins`);
+      // Handle nested admins array in response
+      const adminData = response.data?.admins || [];
+      setAdmins(adminData);
     } catch (err) {
       setError("Failed to fetch admin data");
-      console.error(err);
+      console.error("Error fetching admins:", err);
+      setAdmins([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -95,7 +98,7 @@ const AdminTable = () => {
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this admin?")) return;
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API}/${id}`);
+      await axios.delete(`${process.env.NEXT_PUBLIC_API}/delete-admin-by-id/${id}`);
       fetchAdmins();
     } catch (err) {
       setError("Failed to delete admin");

@@ -115,7 +115,7 @@ const Detail = ({ news, mode: initialMode }) => {
 
             const method = news?.id ? 'put' : 'post';
 
-            await axios({
+            const response = await axios({
                 method,
                 url,
                 data: formPayload,
@@ -124,8 +124,8 @@ const Detail = ({ news, mode: initialMode }) => {
                     'Authorization': `Bearer ${token}`
                 }
             });
-
-            onClose();
+            console.log(response);
+            router.push(`/news/${response.data.data.id}?mode=view`);
         } catch (error) {
             console.error('เกิดข้อผิดพลาดในการบันทึก:', error);
             alert('บันทึกข้อมูลไม่สำเร็จ');
@@ -377,11 +377,6 @@ const Detail = ({ news, mode: initialMode }) => {
                                                 {videoFiles.map((file, index) => (
                                                     <div key={index} className="bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2">
                                                         <span>{file.name}</span>
-                                                        <video
-                                                            src={URL.createObjectURL(file)}
-                                                            controls
-                                                            className="w-32 h-20 object-cover rounded"
-                                                        />
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveVideo(index)}

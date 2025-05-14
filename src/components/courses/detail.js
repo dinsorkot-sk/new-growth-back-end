@@ -67,6 +67,8 @@ const Detail = ({ courseId }) => {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeletingVideo, setIsDeletingVideo] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -92,10 +94,12 @@ const Detail = ({ courseId }) => {
     if (!courseId || courseId == " " || courseId == "create") {
       setMode("create");
       setForm(initialFormState);
+      setIsDataLoaded(true);
       return;
     }
 
     try {
+      setIsLoading(true);
       const { data } = await axios.get(
         `${process.env.NEXT_PUBLIC_API}/course/${courseId}`
       );
@@ -116,6 +120,9 @@ const Detail = ({ courseId }) => {
     } catch (err) {
       setError("Failed to load course data");
       console.error("Fetch error:", err);
+    } finally {
+      setIsLoading(false);
+      setIsDataLoaded(true);
     }
   };
 
@@ -201,13 +208,12 @@ const Detail = ({ courseId }) => {
       });
 
       // จัดการผลลัพธ์
-      if (courseId) {
+
+      if (data) {
         setCourse(data);
         setMode("view");
-        router.refresh();
-      } else {
-        router.push(`/admin/courses/${data.id}`);
-        onClose();
+        console.log(data);
+        router.push(`/courses/${data.data.id}`);
       }
     } catch (err) {
       setError(err.response?.data?.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
@@ -272,6 +278,54 @@ const Detail = ({ courseId }) => {
       setIsModalOpen(false);
     }
   };
+
+  const handleDeleteVideo = async () => {
+    if (mode === "create") {
+      setSelectedVideo(null);
+      return;
+    }
+
+    try {
+      setIsDeletingVideo(true);
+      const token = Cookies.get("auth-token");
+      
+      if (!course?.resources?.id) {
+        throw new Error("No video resource found");
+      }
+
+      await axios.delete(`${process.env.NEXT_PUBLIC_API}/video/delete/${course.resources.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Update local state
+      setSelectedVideo(null);
+      setCourse(prev => ({
+        ...prev,
+        resources: null
+      }));
+      
+      // Refresh course data
+      await fetchCourse();
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to delete video");
+      console.error("Delete video error:", err);
+    } finally {
+      setIsDeletingVideo(false);
+    }
+  };
+
+  if (!isDataLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">กำลังโหลดข้อมูล...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!courseId && mode === "view") return null;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
@@ -394,7 +448,7 @@ const Detail = ({ courseId }) => {
 
             {/* ส่วนอัพโหลดภาพ */}
             <div className="relative group">
-              <div className="relative group w-full  max-w-2xl">
+              <div className="relative group w-full max-w-2xl">
                 <div className="bg-black aspect-video flex h-48 items-center justify-center overflow-hidden rounded-lg">
                   {mode === "edit" || mode === "create" ? (
                     <>
@@ -410,36 +464,61 @@ const Detail = ({ courseId }) => {
                         className="cursor-pointer w-full h-full flex items-center justify-center"
                       >
                         {selectedVideo ? (
-                          <video
-                            className="w-full h-full object-cover"
-                            controls
-                            preload="metadata"
-                            playsInline
-                          >
-                            <source
-                              src={URL.createObjectURL(selectedVideo)}
-                              type="video/mp4"
-                            />
-                            ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
-                          </video>
+                          <div className="relative w-full h-full">
+                            <video
+                              className="w-full h-full object-cover"
+                              controls
+                              preload="metadata"
+                              playsInline
+                            >
+                              <source
+                                src={URL.createObjectURL(selectedVideo)}
+                                type="video/mp4"
+                              />
+                              ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
+                            </video>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDeleteVideo();
+                              }}
+                              disabled={isDeletingVideo}
+                              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 disabled:opacity-50"
+                            >
+                              {isDeletingVideo ? "กำลังลบ..." : "ลบวิดีโอ"}
+                            </button>
+                          </div>
                         ) : course?.resources ? (
-                          <video
-                            className="w-full h-full object-cover"
-                            controls
-                            autoPlay
-                            preload="auto"
-                            poster={`${process.env.NEXT_PUBLIC_IMG}${
-                              course.resources.poster_path ||
-                              "/default-poster.jpg"
-                            }`}
-                            data-setup="{}"
-                          >
-                            <source
-                              src={`${process.env.NEXT_PUBLIC_IMG}/${course.resources.files[0].file_path}`}
-                              type="video/mp4"
-                            />
-                            ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
-                          </video>
+                          <div className="relative w-full h-full">
+                            <video
+                              className="w-full h-full object-cover"
+                              controls
+                              autoPlay
+                              preload="auto"
+                              poster={`${process.env.NEXT_PUBLIC_IMG}${
+                                course.resources.poster_path || "/default-poster.jpg"
+                              }`}
+                              data-setup="{}"
+                            >
+                              <source
+                                src={`${process.env.NEXT_PUBLIC_IMG}/${course.resources.files[0].file_path}`}
+                                type="video/mp4"
+                              />
+                              ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
+                            </video>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDeleteVideo();
+                              }}
+                              disabled={isDeletingVideo}
+                              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 disabled:opacity-50"
+                            >
+                              {isDeletingVideo ? "กำลังลบ..." : "ลบวิดีโอ"}
+                            </button>
+                          </div>
                         ) : (
                           <span className="text-gray-300">
                             คลิกเพื่ออัพโหลดวิดีโอพื้นหลัง

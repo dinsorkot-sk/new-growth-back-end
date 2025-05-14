@@ -111,50 +111,59 @@ const DocumentIndex = () => {
 
   const handleSave = async (formData) => {
     try {
-      //     const formData = new FormData();
-      //   console.log(formData);
-
-        const requestData = {
-          vido_file: formData.file,
-          title: formData.title,
-          description: formData.description,
-          duration: formData.duration || 0, // ใส่ค่า default ถ้าเป็น null
-          author: formData.author || "cat",
-          status: formData.status || "show",
-          is_downloadable: true, // ใส่ตามที่ API ต้องการ
-          uploadedFileName: formData.uploadedFileName,
-        };
-
       const formDataToSend = new FormData();
+      
+      // Check if the file is a video
+      const isVideo = formData.file?.type?.includes('video/');
+      
+      if (isVideo) {
+        // Handle video upload
+        formDataToSend.append("video_file", formData.file);
+        formDataToSend.append("title", formData.title);
+        formDataToSend.append("description", formData.description);
+        formDataToSend.append("duration", String(formData.duration || 0));
+        formDataToSend.append("author", formData.author || "cat");
+        formDataToSend.append("status", formData.status || "show");
+        formDataToSend.append("is_downloadable", "true");
+        formDataToSend.append("uploadedFileName", formData.uploadedFileName);
 
-      formDataToSend.append("video_file", formData.file);
-      formDataToSend.append("title", formData.title);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("duration", String(formData.duration || 0));
-      formDataToSend.append("author", formData.author || "cat");
-      formDataToSend.append("status", formData.status || "show");
-      formDataToSend.append("is_downloadable", "true"); // ส่งเป็น string
-      formDataToSend.append("uploadedFileName", formData.uploadedFileName);
-
-      console.log("formData JSON:", JSON.stringify(formData));
-      console.log("www", requestData);
-
-      if (currentDocument) {
-        // แก้ไขเอกสารที่มีอยู่
-        await axios.put(
-          `${process.env.NEXT_PUBLIC_API}/video/update-video/${formData.id}`,
-          requestData
-        );
+        if (currentDocument) {
+          await axios.put(
+            `${process.env.NEXT_PUBLIC_API}/video/update-video/${formData.id}`,
+            formDataToSend
+          );
+        } else {
+          await axios({
+            method: "post",
+            url: `${process.env.NEXT_PUBLIC_API}/video/upload-video`,
+            data: formDataToSend
+          });
+        }
       } else {
-        // เพิ่มเอกสารใหม่
-        await axios({
-          method: "post",
-          url: `${process.env.NEXT_PUBLIC_API}/video/upload-video`,
-          data: formDataToSend
-        });
+        // Handle document upload
+        formDataToSend.append("document_file", formData.file);
+        formDataToSend.append("title", formData.title);
+        formDataToSend.append("description", formData.description || "");
+        formDataToSend.append("type", formData.type || "Document");
+        formDataToSend.append("author", formData.author || "cat");
+        formDataToSend.append("status", formData.status || "show");
+        formDataToSend.append("is_downloadable", "true");
+
+        if (currentDocument) {
+          await axios.put(
+            `${process.env.NEXT_PUBLIC_API}/document/update-document/${formData.id}`,
+            formDataToSend
+          );
+        } else {
+          await axios({
+            method: "post",
+            url: `${process.env.NEXT_PUBLIC_API}/document/upload-document`,
+            data: formDataToSend
+          });
+        }
       }
 
-      // โหลดข้อมูลใหม่หลังบันทึก
+      // Reload data after save
       fetchDocuments(pagination.offset, pagination.limit);
       setView("list");
     } catch (error) {
@@ -182,8 +191,16 @@ const DocumentIndex = () => {
   const handleDownload = async (id, fileName) => {
     try {
       console.log("download", id);
-      // Ensure the API URL is properly formatted
-      const downloadUrl = `${process.env.NEXT_PUBLIC_IMG}/api/video/downloadVideo/${id}`;
+      // Find the document to get its type
+      const docItem = documents.find(doc => doc.id === id);
+      if (!docItem) {
+        throw new Error("Document not found");
+      }
+
+      // Choose the appropriate endpoint based on document type
+      const downloadUrl = docItem.type?.toLowerCase() === 'video' 
+        ? `${process.env.NEXT_PUBLIC_IMG}/api/video/downloadVideo/${id}`
+        : `${process.env.NEXT_PUBLIC_IMG}/api/document/downloadDocument/${id}`;
       
       // ทำการเรียก API เพื่อดาวน์โหลดไฟล์
       const response = await axios.get(downloadUrl, {
@@ -195,6 +212,12 @@ const DocumentIndex = () => {
         throw new Error("No data received from server");
       }
 
+      // Get the file extension from file_type in files array
+      const fileExtension = docItem.files?.[0]?.file_type || 
+                          (docItem.type?.toLowerCase() === 'video' ? 'mp4' : 
+                          docItem.type?.toLowerCase() === 'pdf' ? 'pdf' : 
+                          docItem.type?.toLowerCase() === 'image' ? 'jpg' : 'doc');
+
       // สร้าง URL object จาก blob response
       const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
@@ -202,7 +225,7 @@ const DocumentIndex = () => {
       // สร้าง element <a> สำหรับดาวน์โหลด
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", fileName || `file-${id}.mp4`); // กำหนดชื่อไฟล์ดาวน์โหลด
+      link.setAttribute("download", `${docItem.title || 'file'}.${fileExtension}`); // กำหนดชื่อไฟล์ดาวน์โหลด
 
       // แนบ element เข้ากับ DOM, คลิก, และลบออก
       document.body.appendChild(link);
