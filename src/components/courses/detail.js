@@ -213,7 +213,7 @@ const Detail = ({ courseId }) => {
         setCourse(data);
         setMode("view");
         console.log(data);
-        router.push(`/courses/${data.data.id}`);
+        method === "put" ? router.push(`/courses/${data.id}`) : router.push(`/courses/${data.data.id}`);
       }
     } catch (err) {
       setError(err.response?.data?.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
@@ -555,11 +555,11 @@ const Detail = ({ courseId }) => {
         {/* ส่วนเนื้อหาหลัก */}
         <div className="flex flex-col-reverse md:flex-row p-5 gap-5">
           {/* คอลัมน์ซ้าย - เนื้อหาเนื้อหา */}
-          <div className="flex-1">
+          <div className="flex flex-col">
             <h2 className="text-xl font-bold mb-4">เนื้อหาเนื้อหา</h2>
 
             {mode === "view" ? (
-              <div dangerouslySetInnerHTML={{ __html: form.sub_description }} />
+              <div className="ql-editor" dangerouslySetInnerHTML={{ __html: form.sub_description }} />
             ) : (
               <div>
                 <QuillEditor
@@ -613,11 +613,12 @@ const Detail = ({ courseId }) => {
           </div>
 
           {/* คอลัมน์ขวา - ข้อมูลเพิ่มเติม */}
-          <div className="flex-1 space-y-6">
+          <div className="flex flex-col  space-y-6">
             <div>
               <h2 className="text-xl font-bold mb-4">ข้อมูลเพิ่มเติม</h2>
               {mode === "view" ? (
                 <div
+                  className="ql-editor"
                   dangerouslySetInnerHTML={{ __html: form.additional_info }}
                 />
               ) : (

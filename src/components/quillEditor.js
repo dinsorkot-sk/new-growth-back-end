@@ -2,6 +2,23 @@
 
 import { useEffect, useRef } from 'react';
 
+const toolbarOptions = [
+  ['bold', 'italic', 'underline', 'strike'],
+  ['blockquote', 'code-block'],
+  [{ 'header': 1 }, { 'header': 2 }],
+  [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+  [{ 'script': 'sub' }, { 'script': 'super' }],
+  [{ 'indent': '-1' }, { 'indent': '+1' }],
+  [{ 'direction': 'ltr' }, { 'direction': 'rtl' }],
+  [{ 'size': ['small', false, 'large', 'huge'] }],
+  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+  [{ 'color': [] }, { 'background': [] }],
+  [{ 'font': ['prompt', 'sans-serif', 'serif', 'monospace'] }],
+  [{ 'align': [] }],
+  ['clean'],
+  ['link', 'image', 'video', 'formula']
+];
+
 export default function QuillEditor({ value = '', readOnly = false, onChange }) {
   const editorRef = useRef(null);
   const quillRef = useRef(null);
@@ -9,30 +26,23 @@ export default function QuillEditor({ value = '', readOnly = false, onChange }) 
   // สร้าง Quill instance หรืออัพเดท readOnly status
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      import('quill').then((Quill) => {
+      // โหลด Quill เท่านั้น ไม่ต้อง destructure สองตัว
+      import('quill').then((QuillModule) => {
+        // ดึง constructor ของ Quill
+        const Quill = QuillModule.default || QuillModule;
+        // ลงทะเบียน Prompt font ให้ Quill
+        const Font = Quill.import('formats/font');
+        Font.whitelist = [...Font.whitelist, 'prompt'];
+        Quill.register(Font, true);
         if (editorRef.current) {
           // ถ้ายังไม่มี Quill instance ให้สร้างใหม่
           if (!quillRef.current) {
-            quillRef.current = new Quill.default(editorRef.current, {
+            // ใช้ constructor ที่เราเพิ่งดึงมา
+            quillRef.current = new Quill(editorRef.current, {
               theme: 'snow',
               readOnly: readOnly,
               modules: {
-                toolbar: [
-                  ['bold', 'italic', 'underline', 'strike'],
-                  ['blockquote', 'code-block'],
-                  [{ 'header': 1 }, { 'header': 2 }],
-                  [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                  [{ 'script': 'sub' }, { 'script': 'super' }],
-                  [{ 'indent': '-1' }, { 'indent': '+1' }],
-                  [{ 'direction': 'rtl' }],
-                  [{ 'size': ['small', false, 'large', 'huge'] }],
-                  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                  [{ 'color': [] }, { 'background': [] }],
-                  [{ 'font': [] }],
-                  [{ 'align': [] }],
-                  ['clean'],
-                  ['link', 'image']
-                ]
+                toolbar: toolbarOptions
               },
             });
 
@@ -81,17 +91,37 @@ export default function QuillEditor({ value = '', readOnly = false, onChange }) 
 
   return (
     <>
-      <link 
-        rel="stylesheet" 
-        href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" 
+      {/* โหลด Google Prompt จาก Google Fonts */}
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap"
       />
-      <div 
+      {/* Stylesheet ของ highlight.js */}
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css"
+      />
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css"
+      />
+      {/* ปรับสไตล์ให้ Picker และ Editor ใช้ฟอนต์ Prompt */}
+      <style jsx global>{`
+        .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="prompt"]::before {
+          content: "Prompt";
+          font-family: 'Prompt', sans-serif;
+        }
+        .ql-font-prompt {
+          font-family: 'Prompt', sans-serif;
+        }
+      `}</style>
+      <div
         id="editor"
         ref={editorRef}
-        style={{ 
+        style={{
           minHeight: '300px',
-          marginBottom: '50px' 
-        }} 
+          marginBottom: '50px'
+        }}
       />
     </>
   );

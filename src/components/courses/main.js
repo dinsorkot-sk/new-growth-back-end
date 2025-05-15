@@ -161,7 +161,7 @@ const Main = () => {
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
-            className="w-full border border-gray-300 text-sm rounded-lg p-2.5 focus:ring-[#26A65B] focus:border-[#26A65B]"
+            className="w-full border border-gray-300 text-sm rounded-lg p-2.5 focus:ring-[#26A65B] focus:border-[#26A65B] cursor-pointer"
           >
             <option value="DESC">ใหม่ล่าสุด</option>
             <option value="ASC">เก่าที่สุด</option>
@@ -172,7 +172,7 @@ const Main = () => {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full border border-gray-300 text-sm rounded-lg p-2.5 focus:ring-[#26A65B] focus:border-[#26A65B]"
+            className="w-full border border-gray-300 text-sm rounded-lg p-2.5 focus:ring-[#26A65B] focus:border-[#26A65B] cursor-pointer"
           >
             <option value="">ทั้งหมด</option>
             {industries.map((industry) => (
@@ -186,14 +186,14 @@ const Main = () => {
         <div className="w-full md:w-1/4 flex gap-3">
           <button
             onClick={fetchCourses}
-            className="w-full bg-[#26A65B] text-white rounded-lg px-3 py-2 hover:bg-[#1F8347] transition-colors"
+            className="w-full bg-[#26A65B] text-white rounded-lg px-3 py-2 hover:bg-[#1F8347] transition-colors cursor-pointer"
           >
             ค้นหาเนื้อหา
           </button>
 
           <button
             onClick={() => handleViewDetail(null)}
-            className="w-full border-2 border-[#26A65B] text-[#26A65B] rounded-lg px-3 py-2 hover:bg-[#26A65B]/10 transition-colors"
+            className="w-full border-2 border-[#26A65B] text-[#26A65B] rounded-lg px-3 py-2 hover:bg-[#26A65B]/10 transition-colors cursor-pointer"
           >
             เพิ่มเนื้อหา
           </button>

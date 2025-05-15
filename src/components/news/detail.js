@@ -412,7 +412,7 @@ const Detail = ({ news, mode: initialMode }) => {
                                 ) : (
                                     <div className="prose max-w-none bg-gray-50 p-6 rounded-lg">
                                         {formData.content ? (
-                                            <div dangerouslySetInnerHTML={{ __html: formData.content }} />
+                                            <div className="ql-editor" dangerouslySetInnerHTML={{ __html: formData.content }} />
                                         ) : (
                                             <p className="text-gray-500 italic">ไม่มีเนื้อหา</p>
                                         )}

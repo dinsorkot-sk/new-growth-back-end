@@ -13,7 +13,7 @@ const page = async ({ params, searchParams }) => {
 
     // Fetch news data if id exists
     let news = null;
-    if (id) {
+    if (id && id != "create") {
         try {
             const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/news/${id}`);
             news = response.data;

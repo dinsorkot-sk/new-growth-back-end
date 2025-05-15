@@ -66,7 +66,7 @@ const Main = ({ handleViewDetail }) => {
     };
 
     const handleAddNews = () => {
-        router.push(`/news/null?mode=edit`);
+        router.push(`/news/create?mode=edit`);
     };
 
     const handleView = (item) => {
