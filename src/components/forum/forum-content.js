@@ -22,7 +22,7 @@ const ForumContent = () => {
       const offset = (pageNumber - 1) * limit;
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/topic?offset=${offset}&limit=${limit}`
+        `${process.env.NEXT_PUBLIC_API}/topic?offset=${offset}&limit=${limit}&order=asc`
       );
       
       if (!response.ok) {

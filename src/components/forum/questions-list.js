@@ -143,7 +143,7 @@ const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, 
                 </div>
                 <div className="flex items-center gap-2">
                     <button
-                        className="p-1 rounded hover:bg-gray-100 text-red-500"
+                        className="p-1 rounded hover:bg-gray-100 text-red-500 cursor-pointer"
                         onClick={(e) => {
                             e.stopPropagation();
                             setConfirmDeleteTopic(question.id);

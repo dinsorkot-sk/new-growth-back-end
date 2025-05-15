@@ -238,11 +238,11 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
                         placeholder="ค้นหาคำถาม..."
                         onChange={(e) => handleSearch(e.target.value)}
                     />
-                    <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors cursor-pointer">
                         ค้นหา
                     </button>
                     <button 
-                        className="bg-white border border-green-500 text-green-500 hover:bg-green-50 px-4 py-2 rounded-lg transition-colors flex items-center gap-1"
+                        className="bg-white border border-green-500 text-green-500 hover:bg-green-50 px-4 py-2 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                         onClick={handleAddQuestion}
                     >
                         <span>เพิ่ม กระทู้คำถาม</span>

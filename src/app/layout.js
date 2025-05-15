@@ -1,5 +1,7 @@
 import "./globals.css";
 import { Inter } from 'next/font/google';
+import 'sweetalert2/dist/sweetalert2.min.css'
+import ClientNavLoader from '../components/ClientNavLoader'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -23,6 +25,7 @@ export default function RootLayout({ children }) {
         <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
       </head>
       <body className={inter.variable}>
+        <ClientNavLoader />
         {children}
       </body>
     </html>
