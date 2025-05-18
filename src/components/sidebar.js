@@ -8,13 +8,13 @@ const Sidebar = () => {
     const pathname = usePathname();
 
     const menuItems = [
-        { name: "Dashboard", href: "/dashboard" },
-        { name: "จัดการเนื้อหา", href: "/courses" },
-        { name: "ข่าวสาร & กิจกรรม", href: "/news" },
-        { name: "กระทู้คำถาม", href: "/forum" },
-        { name: "คลังรูปภาพ", href: "/gallery" },
-        { name: "คลังความรู้ออนไลน์", href: "/knowledge" },
-        { name: "การรับสมัคร", href: "/admission" },
+        { name: "Dashboard", href: "/admin/dashboard" },
+        { name: "จัดการเนื้อหา", href: "/admin/courses" },
+        { name: "ข่าวสาร & กิจกรรม", href: "/admin/news" },
+        { name: "กระทู้คำถาม", href: "/admin/forum" },
+        { name: "คลังรูปภาพ", href: "/admin/gallery" },
+        { name: "คลังความรู้ออนไลน์", href: "/admin/knowledge" },
+        { name: "การรับสมัคร", href: "/admin/admission" },
         { name: "จัดการแอดมิน", href: "/admin" },
         { name: "ออกจากระบบ", href: "/login" },
     ];

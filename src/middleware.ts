@@ -7,11 +7,13 @@ export function middleware(request: NextRequest) {
   // ดู url ของ request
   const pathname = request.nextUrl.pathname;
   const token = request.cookies.get('auth-token')?.value;
-  const protectedPaths = ['/dashboard', '/news', '/knowledge', '/gallery', '/forum', '/courses'];
+  const protectedPaths = [
+    '/admin/dashboard', '/admin/news', '/admin/knowledge', '/admin/gallery', '/admin/forum', '/admin/courses', '/admin/admission', '/admin'
+  ];
   // ตัวอย่างการเช็คว่าผู้ใช้เข้าถึง route ที่ต้องการ authentication หรือไม่
   if (pathname === '/login' && token) {
     // redirect ไปที่หน้า dashboard หรือหน้าหลักแทน
-    const url = new URL('/dashboard', request.url);
+    const url = new URL('/admin/dashboard', request.url);
     console.log("adasd : " ,pathname)
     return NextResponse.redirect(url);
   }
@@ -34,10 +36,9 @@ export function middleware(request: NextRequest) {
 export const config = {
   // ใช้ matcher เพื่อกำหนด paths ที่ต้องการให้ middleware ทำงาน
   matcher: [
-    // ใช้กับทุก route ที่ขึ้นต้นด้วย /dashboard
-    '/dashboard/:path*',
     // ใช้กับทุก route ที่ขึ้นต้นด้วย /api
     '/api/:path*',
-    '/news', '/knowledge', '/gallery', '/forum', '/courses','/login'
+    '/news', '/knowledge', '/gallery', '/forum', '/courses','/login',
+    '/admin/dashboard', '/admin/news', '/admin/knowledge', '/admin/gallery', '/admin/forum', '/admin/courses', '/admin/admission', '/admin'
   ],
 }
