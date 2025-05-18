@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Search, Plus, Eye, Trash, Edit, X, Image, Upload, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import Image from 'next/image';
 
 const Main = ({ 
     images, 
@@ -247,10 +248,13 @@ const Main = ({
                                 className="h-48 bg-gray-200 flex items-center justify-center relative cursor-pointer"
                                 onClick={() => handleViewDetail(image)}
                             >
-                                <img 
+                                <Image 
                                     src={`${baseUrl}/${image.image_path}`} 
                                     alt={`รูปภาพ ${image.id}`}
                                     className="w-full h-full object-cover animate-fadeInImg"
+                                    width={400}
+                                    height={300}
+                                    style={{ objectFit: 'cover' }}
                                 />
                                 {/* Menu Button */}
                                 <button 

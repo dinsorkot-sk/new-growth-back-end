@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import Cookies from "js-cookie";
+import Link from "next/link";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -711,7 +712,7 @@ const Detail = ({ courseId }) => {
       </div>
 
       <div className="mt-6">
-        <a href="/">
+        <Link href="/">
           <button
             onClick={onClose}
             className="text-blue-500 underline flex items-center cursor-pointer"
@@ -719,7 +720,7 @@ const Detail = ({ courseId }) => {
             <span className="mr-1">&lt;</span>
             กลับไปหน้ารายการ
           </button>
-        </a>
+        </Link>
       </div>
 
       {isModalOpen && (

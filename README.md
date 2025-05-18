@@ -41,7 +41,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 | `/forum`            | Forum                   |
 | `/gallery`          | Gallery                 |
 | `/knowledge`        | Knowledge base          |
-| `/login`            | Login page              |
+| `/admin/login`            | Login page              |
 | `/news`             | News listing            |
 | `/news/[id]`        | News details            |
 

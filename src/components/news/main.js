@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import Image from 'next/image';
 
 const Main = ({ handleViewDetail }) => {
     const router = useRouter();
@@ -66,15 +67,15 @@ const Main = ({ handleViewDetail }) => {
     };
 
     const handleAddNews = () => {
-        router.push(`/news/create?mode=edit`);
+        router.push(`/admin/news/create?mode=edit`);
     };
 
     const handleView = (item) => {
-        router.push(`/news/${item.id}?mode=view`);
+        router.push(`/admin/news/${item.id}?mode=view`);
     };
 
     const handleEdit = (item) => {
-        router.push(`/news/${item.id}?mode=edit`);
+        router.push(`/admin/news/${item.id}?mode=edit`);
     };
 
     const handleDelete = (item) => {
@@ -210,10 +211,13 @@ const Main = ({ handleViewDetail }) => {
                                 {/* ส่วนภาพ */}
                                 <div className="bg-gray-200 h-64 w-full relative overflow-hidden">
                                     {item.image?.image_path ? (
-                                        <img
+                                        <Image
                                             src={`${process.env.NEXT_PUBLIC_IMG}/${item.image.image_path}`}
                                             alt={item.title}
                                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                                            width={500}
+                                            height={300}
+                                            style={{ objectFit: 'cover' }}
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-gray-300 flex items-center justify-center">

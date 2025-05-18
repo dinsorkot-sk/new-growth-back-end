@@ -8,27 +8,36 @@ export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const token = request.cookies.get('auth-token')?.value;
   const protectedPaths = [
-    '/admin/dashboard', '/admin/news', '/admin/knowledge', '/admin/gallery', '/admin/forum', '/admin/courses', '/admin/admission', '/admin'
+    '/admin/dashboard', '/admin/news', '/admin/knowledge', '/admin/gallery', '/admin/forum', '/admin/courses', '/admin/admission', '/admin/admin'
   ];
-  // ตัวอย่างการเช็คว่าผู้ใช้เข้าถึง route ที่ต้องการ authentication หรือไม่
-  if (pathname === '/login' && token) {
-    // redirect ไปที่หน้า dashboard หรือหน้าหลักแทน
-    const url = new URL('/admin/dashboard', request.url);
-    console.log("adasd : " ,pathname)
+
+  // Redirect root path to admin login
+  if (pathname === '/') {
+    const url = new URL('/admin/login', request.url);
     return NextResponse.redirect(url);
   }
-  if (protectedPaths.some(path => pathname.startsWith(path))) {
 
+  // ถ้ามี token และพยายามเข้าหน้า login ให้ redirect ไป dashboard
+  if (pathname === '/admin/login' && token) {
+    const url = new URL('/admin/dashboard', request.url);
+    return NextResponse.redirect(url);
+  }
+
+  // ถ้าไม่มี token และพยายามเข้าหน้า protected ให้ redirect ไป login
+  if (protectedPaths.some(path => pathname.startsWith(path))) {
     if (!token) {
-      // ถ้าไม่มี token ให้ redirect ไปที่หน้า login
-      const url = new URL('/login', request.url);
-      // ส่ง URL ที่ user พยายามเข้าถึงไปด้วยเพื่อ redirect กลับมาหลังจาก login
+      const url = new URL('/admin/login', request.url);
       url.searchParams.set('from', pathname);
       return NextResponse.redirect(url);
     }
   }
+
+  // Redirect /login to /admin/login
+  if (pathname === '/login') {
+    const url = new URL('/admin/login', request.url);
+    return NextResponse.redirect(url);
+  }
   
-  // ถ้าไม่มีเงื่อนไขใดทำงาน ปล่อยให้ request ผ่านไป
   return NextResponse.next();
 }
 
@@ -38,7 +47,8 @@ export const config = {
   matcher: [
     // ใช้กับทุก route ที่ขึ้นต้นด้วย /api
     '/api/:path*',
-    '/news', '/knowledge', '/gallery', '/forum', '/courses','/login',
-    '/admin/dashboard', '/admin/news', '/admin/knowledge', '/admin/gallery', '/admin/forum', '/admin/courses', '/admin/admission', '/admin'
+    '/',
+    '/login',
+    '/admin/:path*'
   ],
 }

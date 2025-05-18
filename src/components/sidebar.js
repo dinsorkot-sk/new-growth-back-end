@@ -15,8 +15,8 @@ const Sidebar = () => {
         { name: "คลังรูปภาพ", href: "/admin/gallery" },
         { name: "คลังความรู้ออนไลน์", href: "/admin/knowledge" },
         { name: "การรับสมัคร", href: "/admin/admission" },
-        { name: "จัดการแอดมิน", href: "/admin" },
-        { name: "ออกจากระบบ", href: "/login" },
+        { name: "จัดการแอดมิน", href: "/admin/admin" },
+        { name: "ออกจากระบบ", href: "/admin/login" },
     ];
 
     const clearToken = () => {
@@ -50,7 +50,7 @@ const Sidebar = () => {
             </ul>
             <ul>
                 <li>
-                    <Link href="/login">
+                    <Link href="/admin/login">
                         <div
                             onClick={clearToken}
                             className={`cursor-pointer border-b-1 border-[#2C3352] p-3 mt-auto 

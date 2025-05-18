@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Cookies from 'js-cookie';
 import axios from 'axios'; // เพิ่มการนำเข้า axios
 import { useRouter } from "next/navigation";
+import Image from 'next/image';
 
 
 const QuillEditor = dynamic(() => import('../quillEditor'), {
@@ -125,7 +126,7 @@ const Detail = ({ news, mode: initialMode }) => {
                 }
             });
             console.log(response);
-            router.push(`/news/${response.data.data.id}?mode=view`);
+            router.push(`/admin/news/${response.data.data.id}?mode=view`);
         } catch (error) {
             console.error('เกิดข้อผิดพลาดในการบันทึก:', error);
             alert('บันทึกข้อมูลไม่สำเร็จ');
@@ -250,10 +251,13 @@ const Detail = ({ news, mode: initialMode }) => {
 
                             {mode === 'view' && news?.image?.image_path && (
                                 <div className="mb-6">
-                                    <img
+                                    <Image
                                         src={`${process.env.NEXT_PUBLIC_IMG}/${news.image.image_path}`}
                                         alt={formData.title}
                                         className="w-full h-auto object-contain rounded-lg"
+                                        width={800}
+                                        height={600}
+                                        style={{ objectFit: 'contain' }}
                                     />
                                 </div>
                             )}

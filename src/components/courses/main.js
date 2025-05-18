@@ -55,9 +55,9 @@ const Main = () => {
 
   const handleViewDetail = (course) => {
   if (!course?.id) {
-    router.push("/courses/create");
+    router.push("/admin/courses/create");
   } else {
-    router.push(`/courses/${course.id}`);
+    router.push(`/admin/courses/${course.id}`);
   }
 };
   const [courses, setCourses] = useState([]);

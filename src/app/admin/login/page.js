@@ -25,7 +25,7 @@ const Login = () => {
             Cookies.set('auth-token', response.data.token, { expires: 7 });
             
             // เปลี่ยนเส้นทางไปหน้า dashboard
-            router.push('/dashboard');
+            router.push('/admin/dashboard');
         } catch (error) {
             // จัดการข้อผิดพลาดต่างๆ
             if (error.response) {

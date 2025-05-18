@@ -200,7 +200,7 @@ const Index = () => {
             </div>
           </div>
           <div className="text-3xl font-bold my-3">{data.courseCount?.toLocaleString() || 0}</div>
-          <Link href={'/courses'}>
+          <Link href={'/admin/courses'}>
             <div className="text-green-600 text-sm cursor-pointer flex items-center">
               หลักสูตรทั้งหมด
               <ChevronRight size={16} className="ml-1" />
@@ -217,12 +217,12 @@ const Index = () => {
             </div>
           </div>
           <div className="text-3xl font-bold my-3">{data.newMessages?.toLocaleString() || 0}</div>
-          <a href='#messages'>
+          <Link href='#messages'>
             <div className="text-red-600 text-sm flex items-center">
               ข้อความวันนี้
               <ChevronRight size={16} className="ml-1" />
             </div>
-          </a>
+          </Link>
         </div>
 
         {/* Activities Card */}
@@ -234,7 +234,7 @@ const Index = () => {
             </div>
           </div>
           <div className="text-3xl font-bold my-3">{data.newsCount?.toLocaleString() || 0}</div>
-          <Link href={'/news'}>
+          <Link href={'/admin/news'}>
             <div className="text-blue-600 text-sm flex items-center">
               กิจกรรมทั้งหมด
               <ChevronRight size={16} className="ml-1" />
@@ -275,9 +275,9 @@ const Index = () => {
                   className="py-4 hover:bg-gray-50 px-2 rounded transition-colors cursor-pointer"
                   onClick={() => {
                     if (msg.type === 'forum') {
-                      router.push(`/forum?questionId=${msg.topic_id}#answer-${msg.id}`);
+                      router.push(`/admin/forum?questionId=${msg.topic_id}#answer-${msg.id}`);
                     } else if (msg.type === 'course') {
-                      router.push(`/courses/${msg.course_id}`);
+                      router.push(`/admin/courses/${msg.course_id}`);
                     }
                   }}
                 >
@@ -307,7 +307,7 @@ const Index = () => {
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold text-gray-800">กิจกรรมล่าสุด</h3>
-            <button className="text-blue-600 hover:text-blue-800 transition-colors flex items-center text-sm font-medium cursor-pointer" onClick={() => router.push('/news')}>
+            <button className="text-blue-600 hover:text-blue-800 transition-colors flex items-center text-sm font-medium cursor-pointer" onClick={() => router.push('/admin/news')}>
               ดูทั้งหมด
               <ChevronRight size={16} className="ml-1" />
             </button>
@@ -316,7 +316,7 @@ const Index = () => {
           {data.latestActivities?.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {data.latestActivities.map((activity, index) => (
-                <div key={activity.id || activity.created_at || index} className="py-4 hover:bg-gray-50 px-2 rounded transition-colors cursor-pointer" onClick={() => router.push(`/news/${activity.id}`)} >
+                <div key={activity.id || activity.created_at || index} className="py-4 hover:bg-gray-50 px-2 rounded transition-colors cursor-pointer" onClick={() => router.push(`/admin/news/${activity.id}`)} >
                   <p className="font-medium text-gray-800">{activity.title || 'ไม่ทราบหัวข้อ'}</p>
                   <p className="text-sm text-gray-600 mt-1">{activity.short_description}</p>
                   <p className="text-sm text-gray-500 mt-1 flex items-center">
