@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
   FileText,
@@ -21,8 +21,8 @@ const DocumentList = ({
   onPageChange,
   onDownload,
 }) => {
-  // Convert empty documents to empty array
-  const allDocuments = documents || [];
+  // Convert empty documents to empty array and memoize it
+  const allDocuments = useMemo(() => documents || [], [documents]);
 
   // Add search state
   const [searchQuery, setSearchQuery] = useState("");

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import Image from 'next/image';
 
 const renderStars = (rating) => {
   const fullStars = Math.floor(rating);
@@ -72,7 +73,7 @@ const Main = () => {
   const limit = 8; // จำนวนคอร์สต่อหน้า
 
   // ดึงข้อมูลเนื้อหา
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       setLoading(true);
       const offset = (currentPage - 1) * limit;
@@ -98,11 +99,11 @@ const Main = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, limit, searchTerm, sortOrder, category]);
 
   useEffect(() => {
     fetchCourses();
-  }, [currentPage, sortOrder, category]);
+  }, [fetchCourses]);
 
   // เปลี่ยนหน้า
   const handlePagination = (page) => {
@@ -214,10 +215,13 @@ const Main = () => {
               >
                 <div className="bg-[#D9D9D9] h-48 w-full relative">
                   {course?.image && (
-                    <img
+                    <Image
                       src={`${process.env.NEXT_PUBLIC_IMG}${course.image.image_path}`}
                       alt={course.name}
                       className="w-full h-full object-cover"
+                      width={500}
+                      height={300}
+                      priority
                     />
                   )}
                 </div>

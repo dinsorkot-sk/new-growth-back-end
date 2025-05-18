@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import axios from "axios";
@@ -74,7 +74,7 @@ const Detail = ({ courseId }) => {
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const initialFormState = {
+  const initialFormState = useMemo(() => ({
     name: "",
     description: "",
     sub_description: "",
@@ -82,16 +82,11 @@ const Detail = ({ courseId }) => {
     industries: [],
     instructor: "",
     publishDate: new Date().toISOString().split("T")[0],
-  };
+  }), []);
 
   const [form, setForm] = useState(initialFormState);
 
-  // ดึงข้อมูลเนื้อหา (เมื่อมี courseId)
-  useEffect(() => {
-    fetchCourse();
-  }, [courseId]);
-
-  const fetchCourse = async () => {
+  const fetchCourse = useCallback(async () => {
     if (!courseId || courseId == " " || courseId == "create") {
       setMode("create");
       setForm(initialFormState);
@@ -125,7 +120,11 @@ const Detail = ({ courseId }) => {
       setIsLoading(false);
       setIsDataLoaded(true);
     }
-  };
+  }, [courseId, initialFormState]);
+
+  useEffect(() => {
+    fetchCourse();
+  }, [fetchCourse]);
 
   // การจัดการฟอร์ม
   const handleChange = (field, value) => {

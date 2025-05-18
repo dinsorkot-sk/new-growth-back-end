@@ -1,5 +1,7 @@
 "use client";
 
+import Image from 'next/image';
+
 const CategoryList = ({ categories, selectedCategory, onSelectCategory }) => {
     // ฟังก์ชันสำหรับการเลือกหรือยกเลิกการเลือกหมวดหมู่
     const handleCategoryClick = (category) => {
@@ -37,9 +39,11 @@ const CategoryCard = ({ category, isSelected, onSelect }) => {
         >
             <div className="mb-2">
                 <div className="w-12 h-12 flex items-center justify-center bg-amber-100 rounded-full">
-                    <img 
+                    <Image 
                         src="/graduation-cap.svg" 
                         alt={category.name}
+                        width={24}
+                        height={24}
                         className="w-6 h-6" 
                     />
                 </div>

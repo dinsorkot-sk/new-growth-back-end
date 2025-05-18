@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import Image from 'next/image';
+import { debounce } from "lodash";
 
 const Main = ({ handleViewDetail }) => {
     const router = useRouter();
 
     const [news, setNews] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortOrder, setSortOrder] = useState("newest");
+    const [sortOrder, setSortOrder] = useState("DESC");
     const [category, setCategory] = useState("");
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedNews, setSelectedNews] = useState(null);
@@ -22,48 +23,55 @@ const Main = ({ handleViewDetail }) => {
         limit: 6,
         total: 0,
     });
+    const [error, setError] = useState(null);
 
-    const fetchNews = async () => {
+    const fetchNews = useCallback(async (signal) => {
         try {
             setIsLoading(true);
-            const token = Cookies.get("auth-token");
-            const params = {
-                offset: pagination.offset,
-                limit: pagination.limit,
-                search: searchQuery,
-                category,
-                sort: sortOrder === "newest" ? "DESC" : "ASC",
-            };
-
+            const { offset, limit } = pagination;
             const response = await axios.get(
-                `${process.env.NEXT_PUBLIC_API}/news`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params,
-                }
+                `${process.env.NEXT_PUBLIC_API}/news?offset=${offset}&limit=${limit}&search=${searchQuery}&sort=${sortOrder}&category=${category}`,
+                { signal }
             );
-
-            setNews(response.data.data);
+            setNews(response.data.data || []);
+            console.log(response.data.data)
             setPagination(prev => ({
                 ...prev,
-                total: response.data.pagination.totalCount,
+                total: response.data.total || 0
             }));
             setCategories(response.data.tag)
-        } catch (error) {
-            console.error("Error fetching news:", error);
-            alert("ดึงข้อมูลไม่สำเร็จ");
+            setError(null);
+        } catch (err) {
+            if (err.name === 'CanceledError') return;
+            console.error("Error fetching news:", err);
+            setError("ไม่สามารถโหลดข้อมูลข่าวสารได้ กรุณาลองใหม่อีกครั้ง");
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [pagination, searchQuery, sortOrder, category]);
+
+    const debouncedSearch = useCallback(
+        (signal) => {
+            const debouncedFn = debounce(() => {
+                fetchNews(signal);
+            }, 500);
+            debouncedFn();
+            return () => debouncedFn.cancel();
+        },
+        [fetchNews]
+    );
 
     useEffect(() => {
-        fetchNews();
-    }, [pagination.offset, searchQuery, sortOrder, category]);
+        const controller = new AbortController();
+        fetchNews(controller.signal);
+        return () => controller.abort();
+    }, [fetchNews]);
 
     // Handler functions
     const handleSearch = () => {
-        fetchNews();
+        const controller = new AbortController();
+        debouncedSearch(controller.signal);
+        return () => controller.abort();
     };
 
     const handleAddNews = () => {
@@ -150,8 +158,8 @@ const Main = ({ handleViewDetail }) => {
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
                     >
-                        <option value="newest">เรียงตาม: ใหม่</option>
-                        <option value="oldest">เรียงตาม: เก่า</option>
+                        <option value="DESC">เรียงตาม: ใหม่</option>
+                        <option value="ASC">เรียงตาม: เก่า</option>
                     </select>
                 </div>
 
@@ -211,16 +219,19 @@ const Main = ({ handleViewDetail }) => {
                                 {/* ส่วนภาพ */}
                                 <div className="bg-gray-200 h-64 w-full relative overflow-hidden">
                                     {item.image?.image_path ? (
-                                        <Image
-                                            src={`${process.env.NEXT_PUBLIC_IMG}/${item.image.image_path}`}
-                                            alt={item.title}
-                                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                                            width={500}
-                                            height={300}
-                                            style={{ objectFit: 'cover' }}
-                                        />
+                                        <div className="relative w-full h-64">
+                                            <Image
+                                                src={`${process.env.NEXT_PUBLIC_IMG}/${item.image.image_path}`}
+                                                alt={item.title}
+                                                fill
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                className="object-cover transition-transform duration-300 hover:scale-110"
+                                                priority={false}
+                                                quality={85}
+                                            />
+                                        </div>
                                     ) : (
-                                        <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                                        <div className="w-full h-64 bg-gray-300 flex items-center justify-center">
                                             <span className="text-gray-500">ไม่มีรูปภาพ</span>
                                         </div>
                                     )}
