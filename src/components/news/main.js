@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
@@ -25,16 +25,16 @@ const Main = ({ handleViewDetail }) => {
     });
     const [error, setError] = useState(null);
 
+    const { offset, limit } = pagination;
+
     const fetchNews = useCallback(async (signal) => {
         try {
             setIsLoading(true);
-            const { offset, limit } = pagination;
             const response = await axios.get(
                 `${process.env.NEXT_PUBLIC_API}/news?offset=${offset}&limit=${limit}&search=${searchQuery}&sort=${sortOrder}&category=${category}`,
                 { signal }
             );
             setNews(response.data.data || []);
-            console.log(response.data.data)
             setPagination(prev => ({
                 ...prev,
                 total: response.data.total || 0
@@ -48,31 +48,31 @@ const Main = ({ handleViewDetail }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [pagination, searchQuery, sortOrder, category]);
+    }, [offset, limit, searchQuery, sortOrder, category]);
 
-    const debouncedSearch = useCallback(
-        (signal) => {
-            const debouncedFn = debounce(() => {
-                fetchNews(signal);
-            }, 500);
-            debouncedFn();
-            return () => debouncedFn.cancel();
-        },
+    // สร้าง debounced version ของ fetchNews
+    const debouncedFetchNews = useMemo(
+        () => debounce((signal) => {
+            fetchNews(signal);
+        }, 500),
         [fetchNews]
     );
 
     useEffect(() => {
         const controller = new AbortController();
-        fetchNews(controller.signal);
-        return () => controller.abort();
-    }, [fetchNews]);
+        debouncedFetchNews(controller.signal);
+
+        return () => {
+            controller.abort();
+            debouncedFetchNews.cancel();
+        };
+    }, [debouncedFetchNews]);
 
     // Handler functions
-    const handleSearch = () => {
+    const handleSearch = useCallback(() => {
         const controller = new AbortController();
-        debouncedSearch(controller.signal);
-        return () => controller.abort();
-    };
+        fetchNews(controller.signal);
+    }, [fetchNews]);
 
     const handleAddNews = () => {
         router.push(`/admin/news/create?mode=edit`);
@@ -108,7 +108,7 @@ const Main = ({ handleViewDetail }) => {
     };
 
     // ส่วน Pagination
-    const handlePagination = (action) => {
+    const handlePagination = useCallback((action) => {
         let newOffset = pagination.offset;
         const totalPages = Math.ceil(pagination.total / pagination.limit);
 
@@ -121,7 +121,7 @@ const Main = ({ handleViewDetail }) => {
         if (newOffset >= 0 && newOffset < pagination.total) {
             setPagination(prev => ({ ...prev, offset: newOffset }));
         }
-    };
+    }, [pagination.offset, pagination.limit, pagination.total]);
 
     // คำนวณเลขหน้า
     const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;

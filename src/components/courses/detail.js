@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import React from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Link from "next/link";
@@ -10,10 +10,7 @@ import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
-const QuillEditor = dynamic(() => import("../quillEditor"), {
-  ssr: false,
-  loading: () => <p>Loading editor...</p>,
-});
+const QuillEditor = React.lazy(() => import("../quillEditor"));
 
 const renderStars = (rating) => {
   const fullStars = Math.floor(rating);
@@ -213,7 +210,7 @@ const Detail = ({ courseId }) => {
         setCourse(data);
         setMode("view");
         console.log(data);
-        method === "put" ? router.push(`/courses/${data.id}`) : router.push(`/courses/${data.data.id}`);
+        method === "put" ? router.push(`/admin/courses/${data.id}`) : router.push(`/admin/courses/${data.data.id}`);
       }
     } catch (err) {
       setError(err.response?.data?.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
@@ -348,7 +345,7 @@ const Detail = ({ courseId }) => {
                   selectedImage
                 )})`
               : course?.image?.image_path
-              ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${process.env.NEXT_PUBLIC_IMG}${course.image.image_path})`
+              ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${process.env.NEXT_PUBLIC_IMG}${course.image.image_path.startsWith('/') ? '' : '/'}${course.image.image_path.replace(/\\/g, "/")})`
               : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center",
@@ -562,10 +559,13 @@ const Detail = ({ courseId }) => {
               <div className="ql-editor" dangerouslySetInnerHTML={{ __html: form.sub_description }} />
             ) : (
               <div>
-                <QuillEditor
-                  value={form.sub_description}
-                  onChange={(value) => handleChange("sub_description", value)}
-                />
+                <Suspense fallback={<div>Loading editor...</div>}>
+                  <QuillEditor
+                    key={`sub_description_${mode}`}
+                    value={form.sub_description}
+                    onChange={(value) => handleChange("sub_description", value)}
+                  />
+                </Suspense>
               </div>
             )}
 
@@ -623,10 +623,13 @@ const Detail = ({ courseId }) => {
                 />
               ) : (
                 <div>
-                  <QuillEditor
-                    value={form.additional_info}
-                    onChange={(value) => handleChange("additional_info", value)}
-                  />
+                  <Suspense fallback={<div>Loading editor...</div>}>
+                    <QuillEditor
+                      key={`additional_info_${mode}`}
+                      value={form.additional_info}
+                      onChange={(value) => handleChange("additional_info", value)}
+                    />
+                  </Suspense>
                 </div>
               )}
             </div>

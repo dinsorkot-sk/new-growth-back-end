@@ -90,7 +90,7 @@ const Main = () => {
           },
         }
       );
-
+      console.log(response.data);
       setCourses(response.data.data);
       setTotalPages(response.data.pagination.totalPages);
       setIndustries(response.data.industries);
@@ -216,7 +216,7 @@ const Main = () => {
                 <div className="bg-[#D9D9D9] h-48 w-full relative">
                   {course?.image && (
                     <Image
-                      src={`${process.env.NEXT_PUBLIC_IMG}${course.image.image_path}`}
+                      src={`${process.env.NEXT_PUBLIC_IMG}${course.image.image_path.startsWith('/') ? '' : '/'}${course.image.image_path}`}
                       alt={course.name}
                       className="w-full h-full object-cover"
                       width={500}

@@ -1,7 +1,7 @@
 "use client";
 import Main from "./main";
 import Detail from "./detail";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 
 const Index = ({ initialRefType = "course" }) => { 
@@ -10,7 +10,7 @@ const Index = ({ initialRefType = "course" }) => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [pagination, setPagination] = useState({
+    const [paginationState, setPaginationState] = useState({
         offset: 0,
         limit: 9,
         total: 0,
@@ -18,38 +18,58 @@ const Index = ({ initialRefType = "course" }) => {
     });
     const [refType, setRefType] = useState(initialRefType);
     
+    const paginationValues = useMemo(() => ({
+        offset: paginationState.offset,
+        limit: paginationState.limit
+    }), [paginationState.offset, paginationState.limit]);
+    
     // Fetch images from API
     const fetchImages = useCallback(async () => {
+        let isMounted = true;
         try {
             setLoading(true);
-            const { offset, limit } = pagination;
+            const { offset, limit } = paginationValues;
             const response = await axios.get(
                `${process.env.NEXT_PUBLIC_IMG}/api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`
             );
             
-            setImages(response.data.images || []);
-            setPagination(prev => ({
-                ...prev,
-                total: response.data.total || 0
-            }));
-            setError(null);
+            if (isMounted) {
+                setImages(response.data.images || []);
+                setPaginationState(prev => ({
+                    ...prev,
+                    total: response.data.total || 0
+                }));
+                setError(null);
+            }
         } catch (err) {
-            console.error("Error fetching images:", err);
-            setError("ไม่สามารถโหลดข้อมูลรูปภาพได้ กรุณาลองใหม่อีกครั้ง");
+            if (isMounted) {
+                console.error("Error fetching images:", err);
+                setError("ไม่สามารถโหลดข้อมูลรูปภาพได้ กรุณาลองใหม่อีกครั้ง");
+                setImages([]); // Clear images on error
+            }
         } finally {
-            setLoading(false);
+            if (isMounted) {
+                setLoading(false);
+            }
         }
-    }, [pagination, refType]);
+        return () => {
+            isMounted = false;
+        };
+    }, [paginationValues, refType]);
     
     // Load images on initial render or when pagination/refType changes
     useEffect(() => {
+        const controller = new AbortController();
         fetchImages();
+        return () => {
+            controller.abort();
+        };
     }, [fetchImages]);
     
     // Change page
     const handlePageChange = (newPage) => {
-        const newOffset = (newPage - 1) * pagination.limit;
-        setPagination(prev => ({
+        const newOffset = (newPage - 1) * paginationValues.limit;
+        setPaginationState(prev => ({
             ...prev,
             offset: newOffset,
             currentPage: newPage
@@ -58,7 +78,7 @@ const Index = ({ initialRefType = "course" }) => {
     
     // Change items per page
     const handleLimitChange = (newLimit) => {
-        setPagination(prev => ({
+        setPaginationState(prev => ({
             ...prev,
             limit: newLimit,
             offset: 0,
@@ -69,7 +89,7 @@ const Index = ({ initialRefType = "course" }) => {
     // Change ref type
     const handleRefTypeChange = (newRefType) => {
         setRefType(newRefType);
-        setPagination(prev => ({
+        setPaginationState(prev => ({
             ...prev,
             offset: 0,
             currentPage: 1
@@ -160,7 +180,7 @@ const Index = ({ initialRefType = "course" }) => {
                     images={images} 
                     loading={loading}
                     error={error}
-                    pagination={pagination}
+                    pagination={paginationValues}
                     refType={refType}
                     onPageChange={handlePageChange}
                     onLimitChange={handleLimitChange}
@@ -172,6 +192,7 @@ const Index = ({ initialRefType = "course" }) => {
                     onAddImage={handleAddImage}
                     onCloseModal={() => setShowAddModal(false)}
                     baseUrl={`${process.env.NEXT_PUBLIC_IMG}`}
+                    isEmpty={!loading && (!images || images.length === 0)}
                 />
             )}
         </div>
