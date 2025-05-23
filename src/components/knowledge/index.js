@@ -124,7 +124,7 @@ const DocumentIndex = () => {
         formDataToSend.append("duration", String(formData.duration || 0));
         formDataToSend.append("author", formData.author || "cat");
         formDataToSend.append("status", formData.status || "show");
-        formDataToSend.append("is_downloadable", "true");
+        formDataToSend.append("is_downloadable", formData.is_downloadable === 1 ? "true" : "false");
         formDataToSend.append("uploadedFileName", formData.uploadedFileName);
 
         if (currentDocument) {
@@ -147,7 +147,7 @@ const DocumentIndex = () => {
         formDataToSend.append("type", formData.type || "Document");
         formDataToSend.append("author", formData.author || "cat");
         formDataToSend.append("status", formData.status || "show");
-        formDataToSend.append("is_downloadable", "true");
+        formDataToSend.append("is_downloadable", formData.is_downloadable === 1 ? "true" : "false");
 
         if (currentDocument) {
           await axios.put(

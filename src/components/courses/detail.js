@@ -550,9 +550,9 @@ const Detail = ({ courseId }) => {
         </div>
 
         {/* ส่วนเนื้อหาหลัก */}
-        <div className="flex flex-col-reverse md:flex-row p-5 gap-5">
+        <div className="flex flex-col md:flex-row p-5 gap-5">
           {/* คอลัมน์ซ้าย - เนื้อหาเนื้อหา */}
-          <div className="flex flex-col">
+          <div className="flex flex-col w-full md:w-1/2">
             <h2 className="text-xl font-bold mb-4">เนื้อหาเนื้อหา</h2>
 
             {mode === "view" ? (
@@ -613,7 +613,7 @@ const Detail = ({ courseId }) => {
           </div>
 
           {/* คอลัมน์ขวา - ข้อมูลเพิ่มเติม */}
-          <div className="flex flex-col  space-y-6">
+          <div className="flex flex-col space-y-6 w-full md:w-1/2">
             <div>
               <h2 className="text-xl font-bold mb-4">ข้อมูลเพิ่มเติม</h2>
               {mode === "view" ? (

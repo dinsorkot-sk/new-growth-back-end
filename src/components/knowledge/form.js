@@ -5,7 +5,10 @@ import { ArrowLeft, Upload, X } from "lucide-react";
 
 const DocumentForm = ({ document, onBack, onSave }) => {
   const initialState = document
-    ? { ...document }
+    ? { 
+        ...document,
+        is_downloadable: document.files?.[0]?.is_downloadable ? 1 : 0
+      }
     : {
       title: "",
       description: "",
@@ -13,6 +16,7 @@ const DocumentForm = ({ document, onBack, onSave }) => {
       size: "",
       fileUrl: "",
       uploadedFileName: "",
+      is_downloadable: 1,
     };
 
   const [formData, setFormData] = useState(initialState);
@@ -217,6 +221,30 @@ const DocumentForm = ({ document, onBack, onSave }) => {
             </div>
           </div>
         )}
+
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            สถานะการดาวน์โหลด
+          </label>
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, is_downloadable: formData.is_downloadable === 1 ? 0 : 1 })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                formData.is_downloadable === 1 ? 'bg-green-500' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  formData.is_downloadable === 1 ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className="ml-3 text-sm text-gray-600">
+              {formData.is_downloadable === 1 ? 'อนุญาตให้ดาวน์โหลด' : 'ไม่อนุญาตให้ดาวน์โหลด'}
+            </span>
+          </div>
+        </div>
 
         <div className="flex justify-end mt-6 space-x-3">
           <button

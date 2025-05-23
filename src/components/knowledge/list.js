@@ -304,6 +304,9 @@ const handlePageChange = (page) => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     วันที่เผยแพร่
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    สถานะดาวน์โหลด
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     จัดการ
                   </th>
@@ -337,6 +340,13 @@ const handlePageChange = (page) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {formatDate(document.published_date)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        document.files?.[0]?.is_downloadable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {document.files?.[0]?.is_downloadable ? 'อนุญาตให้ดาวน์โหลด' : 'ไม่อนุญาตให้ดาวน์โหลด'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button
