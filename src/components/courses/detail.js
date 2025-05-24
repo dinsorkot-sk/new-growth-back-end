@@ -70,6 +70,8 @@ const Detail = ({ courseId }) => {
 
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeletingCourse, setIsDeletingCourse] = useState(false);
 
   const initialFormState = useMemo(() => ({
     name: "",
@@ -310,6 +312,28 @@ const Detail = ({ courseId }) => {
     }
   };
 
+  const handleDeleteCourse = async () => {
+    try {
+      setIsDeletingCourse(true);
+      const token = Cookies.get("auth-token");
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API}/course/${courseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      router.push('/admin/courses');
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to delete course");
+      console.error("Delete course error:", err);
+    } finally {
+      setIsDeletingCourse(false);
+      setIsDeleteModalOpen(false);
+    }
+  };
+
   if (!isDataLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -371,12 +395,21 @@ const Detail = ({ courseId }) => {
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => setMode("edit")}
-                className="px-4 py-2 bg-blue-500 rounded-md cursor-pointer"
-              >
-                แก้ไข
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setMode("edit")}
+                  className="px-4 py-2 bg-blue-500 rounded-md cursor-pointer"
+                >
+                  แก้ไข
+                </button>
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  disabled={isDeletingCourse}
+                  className="px-4 py-2 bg-red-500 rounded-md cursor-pointer disabled:opacity-50"
+                >
+                  {isDeletingCourse ? "กำลังลบ..." : "ลบ"}
+                </button>
+              </div>
             )}
           </div>
 
@@ -739,6 +772,31 @@ const Detail = ({ courseId }) => {
                 onClick={confirmDelete}
               >
                 ลบ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+            <h2 className="text-lg font-semibold mb-4">ยืนยันการลบคอร์ส</h2>
+            <p className="text-sm mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบคอร์สนี้? การลบจะไม่สามารถย้อนกลับได้</p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
+                onClick={() => setIsDeleteModalOpen(false)}
+                disabled={isDeletingCourse}
+              >
+                ยกเลิก
+              </button>
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
+                onClick={handleDeleteCourse}
+                disabled={isDeletingCourse}
+              >
+                {isDeletingCourse ? "กำลังลบ..." : "ลบ"}
               </button>
             </div>
           </div>
