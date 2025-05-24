@@ -13,9 +13,9 @@ const QuillEditor = dynamic(() => import('../quillEditor'), {
     loading: () => <p>Loading editor...</p>,
 });
 
-const Detail = ({ news, mode: initialMode }) => {
+const Detail = ({ id, mode: initialMode }) => {
     const router = useRouter();
-    const [mode, setMode] = useState(initialMode === 'edit' || !news?.id ? 'edit' : 'view');
+    const [mode, setMode] = useState(initialMode === 'edit' || !id ? 'edit' : 'view');
     const [imageFile, setImageFile] = useState(null);
     const [existingVideos, setExistingVideos] = useState([]);
     const [videoFiles, setVideoFiles] = useState([]);
@@ -23,35 +23,52 @@ const Detail = ({ news, mode: initialMode }) => {
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [news, setNews] = useState(null);
     const [formData, setFormData] = useState({
-        title: news?.title || "",
-        content: news?.content || "",
+        title: "",
+        content: "",
         categories: [],
-        publishDate: news?.publishDate || new Date().toISOString().split('T')[0],
-        status: news?.status || "show",
-        shortDescription: news?.short_description || "",
+        publishDate: new Date().toISOString().split('T')[0],
+        status: "show",
+        shortDescription: "",
     });
     const [newCategory, setNewCategory] = useState('');
 
     useEffect(() => {
-        if (news) {
-            const initialCategories = news.tagAssignments?.map(t => t.tag.name) || [];
-            setFormData({
-                title: news?.title || "",
-                content: news?.content || "",
-                categories: initialCategories || [],
-                publishDate: news?.publishDate || new Date().toISOString().split('T')[0],
-                status: news?.status || "show",
-                shortDescription: news?.short_description || "",
-            });
-            setExistingVideos(news?.resources || []);
-            setVideoFiles([]);
-        }
-        setMode(initialMode === 'edit' || !news?.id ? 'edit' : 'view');
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 500);
-    }, [news, initialMode]);
+        const fetchNews = async () => {
+            if (id && id !== "create") {
+                try {
+                    const token = Cookies.get("auth-token");
+                    const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/news/${id}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+                    const newsData = response.data;
+                    setNews(newsData);
+                    
+                    const initialCategories = newsData.tagAssignments?.map(t => t.tag.name) || [];
+                    setFormData({
+                        title: newsData?.title || "",
+                        content: newsData?.content || "",
+                        categories: initialCategories || [],
+                        publishDate: newsData?.publishDate || new Date().toISOString().split('T')[0],
+                        status: newsData?.status || "show",
+                        shortDescription: newsData?.short_description || "",
+                    });
+                    setExistingVideos(newsData?.resources || []);
+                } catch (error) {
+                    console.error('Error fetching news:', error);
+                }
+            }
+            setMode(initialMode === 'edit' || !id ? 'edit' : 'view');
+            setTimeout(() => {
+                setIsLoading(false);
+            }, 500);
+        };
+
+        fetchNews();
+    }, [id, initialMode]);
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
@@ -105,16 +122,16 @@ const Detail = ({ news, mode: initialMode }) => {
         });
 
         // เพิ่ม keepVideoIds เฉพาะตอน PUT
-        if (news?.id) {
+        if (id && id !== "create") {
             formPayload.append('keep_video_ids', JSON.stringify(existingVideos.map(v => v.id)));
         }
 
         try {
-            const url = news?.id
-                ? `${process.env.NEXT_PUBLIC_API}/news/${news.id}`
+            const url = id && id !== "create"
+                ? `${process.env.NEXT_PUBLIC_API}/news/${id}`
                 : `${process.env.NEXT_PUBLIC_API}/news`;
 
-            const method = news?.id ? 'put' : 'post';
+            const method = id && id !== "create" ? 'put' : 'post';
 
             const response = await axios({
                 method,
@@ -184,7 +201,7 @@ const Detail = ({ news, mode: initialMode }) => {
                     <div className="bg-white flex items-center p-5 w-full drop-shadow-lg rounded-2xl my-3 transform transition-all duration-300 hover:shadow-xl">
                         <h1 className="text-2xl font-semibold text-gray-800">
                             {mode === 'edit' ?
-                                (news?.id ? 'แก้ไขข่าวสาร & กิจกรรม' : 'สร้างข่าวสาร & กิจกรรมใหม่') :
+                                (id && id !== "create" ? 'แก้ไขข่าวสาร & กิจกรรม' : 'สร้างข่าวสาร & กิจกรรมใหม่') :
                                 'รายละเอียดข่าวสาร & กิจกรรม'}
                         </h1>
                     </div>
