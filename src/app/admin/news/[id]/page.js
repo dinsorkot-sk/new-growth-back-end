@@ -1,6 +1,7 @@
 import Sidebar from "@/components/sidebar";
 import Detail from "@/components/news/detail";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 export const metadata = {
     title: "News",
@@ -15,7 +16,12 @@ const page = async ({ params, searchParams }) => {
     let news = null;
     if (id && id != "create") {
         try {
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/news/${id}`);
+            const token = Cookies.get("auth-token");
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/news/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             news = response.data;
             console.log(news);
         } catch (error) {

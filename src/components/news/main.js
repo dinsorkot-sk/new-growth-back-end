@@ -30,9 +30,15 @@ const Main = ({ handleViewDetail }) => {
     const fetchNews = useCallback(async (signal) => {
         try {
             setIsLoading(true);
+            const token = Cookies.get("auth-token");
             const response = await axios.get(
                 `${process.env.NEXT_PUBLIC_API}/news?offset=${offset}&limit=${limit}&search=${searchQuery}&sort=${sortOrder}&category=${category}`,
-                { signal }
+                { 
+                    signal,
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             );
             setNews(response.data.data || []);
             setPagination(prev => ({
@@ -96,7 +102,11 @@ const Main = ({ handleViewDetail }) => {
             const token = Cookies.get("auth-token");
             await axios.delete(
                 `${process.env.NEXT_PUBLIC_API}/news/${selectedNews.id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                { 
+                    headers: { 
+                        Authorization: `Bearer ${token}` 
+                    }
+                }
             );
 
             setDeleteModalOpen(false);

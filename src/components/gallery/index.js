@@ -110,10 +110,11 @@ const Index = ({ initialRefType = "course" }) => {
     };
     
     // Add new image
-    const handleAddImage = async (newImageData, file,description) => {
+    const handleAddImage = async (newImageData, file, description) => {
         console.log("เพิ่มรูปภาพใหม่:", description);
         try {
             setLoading(true);
+            const token = Cookies.get("auth-token");
             
             // Create form data for file upload
             const formData = new FormData();
@@ -127,7 +128,8 @@ const Index = ({ initialRefType = "course" }) => {
                 formData,
                 {
                     headers: {
-                        'Content-Type': 'multipart/form-data'
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
                     }
                 }
             );
@@ -148,9 +150,17 @@ const Index = ({ initialRefType = "course" }) => {
         if (confirm("คุณต้องการลบรูปภาพนี้ใช่หรือไม่?")) {
             try {
                 setLoading(true);
+                const token = Cookies.get("auth-token");
                 
                 // Call API to delete image
-                await axios.delete(`${process.env.NEXT_PUBLIC_API}/image/${imageToDelete.id}`);
+                await axios.delete(
+                    `${process.env.NEXT_PUBLIC_API}/image/${imageToDelete.id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
                 
                 // Refresh images list
                 fetchImages();

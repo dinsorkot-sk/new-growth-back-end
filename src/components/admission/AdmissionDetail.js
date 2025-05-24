@@ -79,10 +79,19 @@ export default function AdmissionDetail() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = Cookies.get('auth-token');
       if (editId) {
-        await axios.put(`${API_URL}/${editId}`, form);
+        await axios.put(`${API_URL}/${editId}`, form, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
       } else {
-        await axios.post(API_URL, form);
+        await axios.post(API_URL, form, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
       }
       fetchAdmissions();
       closeModal();
@@ -95,10 +104,15 @@ export default function AdmissionDetail() {
   const handleDelete = async (id) => {
     if (!confirm("ยืนยันการลบข้อมูลนี้?")) return;
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      const token = Cookies.get('auth-token');
+      await axios.delete(`${API_URL}/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       fetchAdmissions();
     } catch (err) {
-      alert("ลบข้อมูลไม่สำเร็จ");
+      setError("ลบข้อมูลไม่สำเร็จ");
     }
   };
 

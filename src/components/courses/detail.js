@@ -98,8 +98,8 @@ const Detail = ({ courseId }) => {
         `${process.env.NEXT_PUBLIC_API}/course/${courseId}`,
         {
           headers: {
-            Authorization: `Bearer ${token || ""}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 
@@ -283,39 +283,30 @@ const Detail = ({ courseId }) => {
   };
 
   const handleDeleteVideo = async () => {
-    if (mode === "create") {
-      setSelectedVideo(null);
-      return;
-    }
-
-    try {
-      setIsDeletingVideo(true);
-      const token = Cookies.get("auth-token");
-      
-      if (!course?.resources?.id) {
-        throw new Error("No video resource found");
+    if (window.confirm("คุณต้องการลบวิดีโอนี้ใช่หรือไม่?")) {
+      try {
+        const token = Cookies.get("auth-token");
+        await axios.delete(
+          `${process.env.NEXT_PUBLIC_API}/video/delete/${course.resources.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+        // Update local state
+        setSelectedVideo(null);
+        setCourse(prev => ({
+          ...prev,
+          resources: null
+        }));
+        
+        // Refresh course data
+        await fetchCourse();
+      } catch (err) {
+        setError(err.response?.data?.error || "Failed to delete video");
+        console.error("Delete video error:", err);
       }
-
-      await axios.delete(`${process.env.NEXT_PUBLIC_API}/video/delete/${course.resources.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Update local state
-      setSelectedVideo(null);
-      setCourse(prev => ({
-        ...prev,
-        resources: null
-      }));
-      
-      // Refresh course data
-      await fetchCourse();
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to delete video");
-      console.error("Delete video error:", err);
-    } finally {
-      setIsDeletingVideo(false);
     }
   };
 

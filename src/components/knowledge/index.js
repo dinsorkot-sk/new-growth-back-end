@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Form from "./form";
 import List from "./list";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const DocumentIndex = () => {
   const [view, setView] = useState("list"); // list หรือ form
@@ -20,8 +21,14 @@ const DocumentIndex = () => {
   const fetchDocuments = async (offset = 0, limit = 10) => {
     setIsLoading(true);
     try {
+      const token = Cookies.get("auth-token");
       const response = await axios.get(
-        `http://localhost:3001/api/document/getallDocumentAndResouceVideo?offset=${offset}&limit=${limit}`
+        `${process.env.NEXT_PUBLIC_IMG}/api/document/getallDocumentAndResouceVideo?offset=${offset}&limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
 
       // ตรวจสอบว่ามีข้อมูลและโครงสร้างตามที่คาดหวังหรือไม่
@@ -111,6 +118,7 @@ const DocumentIndex = () => {
 
   const handleSave = async (formData) => {
     try {
+      const token = Cookies.get("auth-token");
       const formDataToSend = new FormData();
       
       // Check if the file is a video
@@ -130,13 +138,21 @@ const DocumentIndex = () => {
         if (currentDocument) {
           await axios.put(
             `${process.env.NEXT_PUBLIC_API}/video/update-video/${formData.id}`,
-            formDataToSend
+            formDataToSend,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
           );
         } else {
           await axios({
             method: "post",
             url: `${process.env.NEXT_PUBLIC_API}/video/upload-video`,
-            data: formDataToSend
+            data: formDataToSend,
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           });
         }
       } else {
@@ -152,13 +168,21 @@ const DocumentIndex = () => {
         if (currentDocument) {
           await axios.put(
             `${process.env.NEXT_PUBLIC_API}/document/update-document/${formData.id}`,
-            formDataToSend
+            formDataToSend,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
           );
         } else {
           await axios({
             method: "post",
             url: `${process.env.NEXT_PUBLIC_API}/document/upload-document`,
-            data: formDataToSend
+            data: formDataToSend,
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           });
         }
       }
@@ -175,8 +199,14 @@ const DocumentIndex = () => {
   const handleDelete = async (id) => {
     if (window.confirm("คุณต้องการลบเอกสารนี้ใช่หรือไม่?")) {
       try {
+        const token = Cookies.get("auth-token");
         await axios.delete(
-          `${process.env.NEXT_PUBLIC_API}/video/delete/${id}`
+          `${process.env.NEXT_PUBLIC_API}/video/delete/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
         );
 
         // โหลดข้อมูลใหม่หลังลบ
@@ -190,6 +220,7 @@ const DocumentIndex = () => {
 
   const handleDownload = async (id, fileName) => {
     try {
+      const token = Cookies.get("auth-token");
       console.log("download", id);
       // Find the document to get its type
       const docItem = documents.find(doc => doc.id === id);
@@ -205,6 +236,9 @@ const DocumentIndex = () => {
       // ทำการเรียก API เพื่อดาวน์โหลดไฟล์
       const response = await axios.get(downloadUrl, {
         responseType: "blob", // สำคัญมาก - ต้องระบุ responseType เป็น 'blob' สำหรับการดาวน์โหลดไฟล์
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       // Check if we have valid response data

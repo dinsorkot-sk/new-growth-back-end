@@ -86,7 +86,7 @@ const Index = () => {
       try {
         setIsLoading(true);
         const baseURL = process.env.NEXT_PUBLIC_API || '';
-        const token = Cookies.get('token') || '';
+        const token = Cookies.get('auth-token') || '';
         const response = await axios.get(`${baseURL}/dashboard`, {
           headers: { Authorization: `Bearer ${token}` }
         });

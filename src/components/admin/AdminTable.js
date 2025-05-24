@@ -87,10 +87,19 @@ const AdminTable = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = Cookies.get("auth-token");
       if (editId) {
-        await axios.put(`${process.env.NEXT_PUBLIC_API}/${editId}`, formData);
+        await axios.put(`${process.env.NEXT_PUBLIC_API}/${editId}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
       } else {
-        await axios.post(`${process.env.NEXT_PUBLIC_API}/`, formData);
+        await axios.post(`${process.env.NEXT_PUBLIC_API}/`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
       }
       fetchAdmins();
       closeModal();
@@ -104,7 +113,12 @@ const AdminTable = () => {
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this admin?")) return;
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API}/delete-admin-by-id/${id}`);
+      const token = Cookies.get("auth-token");
+      await axios.delete(`${process.env.NEXT_PUBLIC_API}/delete-admin-by-id/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       fetchAdmins();
     } catch (err) {
       setError("Failed to delete admin");

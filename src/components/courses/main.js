@@ -78,7 +78,6 @@ const Main = () => {
     try {
       setLoading(true);
       const offset = (currentPage - 1) * limit;
-
       const token = Cookies.get("auth-token");
 
       const response = await axios.get(
@@ -92,8 +91,8 @@ const Main = () => {
             category,
           },
           headers: {
-            Authorization: `Bearer ${token || ""}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         }
       );
       console.log(response.data);
