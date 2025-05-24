@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { ArrowLeft, Upload, X } from "lucide-react";
+import Swal from "sweetalert2";
 
 const DocumentForm = ({ document, onBack, onSave }) => {
   const initialState = document
@@ -90,11 +91,29 @@ const DocumentForm = ({ document, onBack, onSave }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log("ssss", formData.file);
-      onSave(formData);
+      // แสดง loading
+      Swal.fire({
+        title: "กำลังบันทึก...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      try {
+        // สมมติว่า onSave คืนค่า promise (async)
+        await onSave(formData);
+        Swal.close(); // ปิด loading เมื่อเสร็จ
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: error.message || "ไม่สามารถบันทึกข้อมูลได้",
+        });
+      }
     }
   };
 
