@@ -93,8 +93,14 @@ const Detail = ({ courseId }) => {
 
     try {
       setIsLoading(true);
+      const token = Cookies.get("auth-token");
       const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API}/course/${courseId}`
+        `${process.env.NEXT_PUBLIC_API}/course/${courseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token || ""}`,
+          },
+        }
       );
 
       setCourse(data);

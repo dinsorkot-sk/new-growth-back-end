@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const API_URL = process.env.NEXT_PUBLIC_API + "/admission";
 
@@ -27,7 +28,12 @@ export default function AdmissionDetail() {
   const fetchAdmissions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(API_URL);
+      const token = Cookies.get('auth-token');
+      const res = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setAdmissions(res.data);
     } catch (err) {
       setError("โหลดข้อมูลไม่สำเร็จ");

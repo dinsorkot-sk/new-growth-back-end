@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const chartOptions = {
@@ -85,7 +86,10 @@ const Index = () => {
       try {
         setIsLoading(true);
         const baseURL = process.env.NEXT_PUBLIC_API || '';
-        const response = await axios.get(`${baseURL}/dashboard`);
+        const token = Cookies.get('token') || '';
+        const response = await axios.get(`${baseURL}/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setData(response.data);
       } catch (err) {
         setError(err.message);

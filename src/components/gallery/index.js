@@ -3,6 +3,7 @@ import Main from "./main";
 import Detail from "./detail";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const Index = ({ initialRefType = "course" }) => { 
     const [images, setImages] = useState([]);
@@ -29,8 +30,14 @@ const Index = ({ initialRefType = "course" }) => {
         try {
             setLoading(true);
             const { offset, limit } = paginationValues;
+            const authToken = Cookies.get("auth-token");
             const response = await axios.get(
-               `${process.env.NEXT_PUBLIC_IMG}/api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`
+               `${process.env.NEXT_PUBLIC_IMG}/api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`,
+               {
+                   headers: {
+                       Authorization: `Bearer ${authToken}`
+                   }
+               }
             );
             
             if (isMounted) {

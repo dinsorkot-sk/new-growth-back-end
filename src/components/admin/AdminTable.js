@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const AdminTable = () => {
   const [admins, setAdmins] = useState([]);
@@ -18,7 +19,12 @@ const AdminTable = () => {
   const fetchAdmins = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/get-all-admins`);
+      const token = Cookies.get("auth-token");
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/get-all-admins`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       // Handle nested admins array in response
       const adminData = response.data?.admins || [];
       setAdmins(adminData);

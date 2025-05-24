@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, MessageCircle, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { useSearchParams } from 'next/navigation';
+import Cookies from "js-cookie";
 
 const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
     const searchParams = useSearchParams();
@@ -11,8 +12,12 @@ const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
 
     const handleDeleteTopic = async (topicId) => {
         try {
+            const authToken = Cookies.get('auth-token');
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/topic/${topicId}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                },
             });
 
             if (!response.ok) {

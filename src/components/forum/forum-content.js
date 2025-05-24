@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import QuestionsIndex from "./index";
 import LoadingSpinner from "./loading";
+import Cookies from "js-cookie";
 
 const ForumContent = () => {
   const [questions, setQuestions] = useState([]);
@@ -21,8 +22,15 @@ const ForumContent = () => {
       setError(null);
       const offset = (pageNumber - 1) * limit;
       
+      const authToken = Cookies.get("auth-token");
+      
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/topic?offset=${offset}&limit=${limit}&order=asc`
+        `${process.env.NEXT_PUBLIC_API}/topic?offset=${offset}&limit=${limit}&order=asc`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        }
       );
       
       if (!response.ok) {

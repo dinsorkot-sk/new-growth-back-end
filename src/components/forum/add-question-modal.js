@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import Cookies from "js-cookie";
 
 const AddQuestionModal = ({ onClose, onSave, selectedCategory }) => {
     const [questionText, setQuestionText] = useState("");
@@ -36,11 +37,15 @@ const AddQuestionModal = ({ onClose, onSave, selectedCategory }) => {
                 answers: [] // Initial state with no answers
             };
             
+            // Retrieve the auth-token cookie
+            const authToken = Cookies.get("auth-token"); // Get the auth-token cookie
+            
             // Send data to the API
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/topic`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}` // Include Bearer token
                 },
                 body: JSON.stringify(topicData),
             });

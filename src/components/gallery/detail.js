@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, Download, Edit, Trash, ArrowLeft, Eye, Calendar, HardDrive, Maximize, User } from "lucide-react";
 import Image from 'next/image';
+import Cookies from "js-cookie";
 
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center min-h-[400px] animate-fadeIn">
@@ -84,11 +85,15 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
         try {
             setIsSaving(true);
             
+            // Get the auth-token from cookies
+            const authToken = Cookies.get('auth-token');
+
             // Call API to update the image description
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/image/${image.id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
                 },
                 body: JSON.stringify({ description })
             });

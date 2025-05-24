@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Image from 'next/image';
+import Cookies from "js-cookie";
 
 const renderStars = (rating) => {
   const fullStars = Math.floor(rating);
@@ -78,6 +79,8 @@ const Main = () => {
       setLoading(true);
       const offset = (currentPage - 1) * limit;
 
+      const token = Cookies.get("auth-token");
+
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API}/course`,
         {
@@ -87,6 +90,9 @@ const Main = () => {
             search: searchTerm,
             sort: sortOrder,
             category,
+          },
+          headers: {
+            Authorization: `Bearer ${token || ""}`,
           },
         }
       );

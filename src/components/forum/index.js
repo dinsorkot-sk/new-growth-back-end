@@ -6,6 +6,7 @@ import CategoryList from "./category-list";
 import AddQuestionModal from "./add-question-modal";
 import Pagination from "./paginations";
 import { useSearchParams, useRouter } from 'next/navigation';
+import Cookies from "js-cookie";
 
 const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange, onRefresh }) => {
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -108,21 +109,21 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
 
     // ฟังก์ชันสำหรับอัปเดตสถานะคำตอบ
     const handleUpdateAnswerStatus = async (questionId, answerId, newStatus) => {
-        console.log(newStatus,questionId,answerId)
+        console.log(newStatus, questionId, answerId);
         try {
             setIsLoading(true);
             setStatusMessage({ type: 'info', text: 'กำลังอัปเดตสถานะ...' });
 
+            const authToken = Cookies.get('auth-token');
+
             // เรียก API เพื่ออัปเดตสถานะ
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/answer/${answerId}`, {
                 method: 'PUT',
-                body:{
-                    status:newStatus
-                },
+                body: JSON.stringify({ status: newStatus }),
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
                 },
-                body: JSON.stringify({ status: newStatus }),
             });
 
             if (!response.ok) {
@@ -174,9 +175,14 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
             setIsLoading(true);
             setStatusMessage({ type: 'info', text: 'กำลังลบคำตอบ...' });
 
+            const authToken = Cookies.get('auth-token');
+
             // เรียก API เพื่อลบคำตอบ
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/answer/${answerId}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                },
             });
 
             if (!response.ok) {
