@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Search, Plus, Eye, Trash, Edit, X, Upload, MoreVertical, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react";
 import Image from 'next/image';
 
-const Main = ({ 
-    images, 
+const Main = ({
+    images,
     loading,
     error,
     pagination,
@@ -11,8 +11,8 @@ const Main = ({
     onPageChange,
     onLimitChange,
     onRefTypeChange,
-    handleViewDetail, 
-    handleAddImage, 
+    handleViewDetail,
+    handleAddImage,
     handleDeleteImage,
     showAddModal,
     onAddImage,
@@ -27,15 +27,15 @@ const Main = ({
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
     const [description, setDescription] = useState("");
-    
-    const filteredImages = images.filter(image => 
+
+    const filteredImages = images.filter(image =>
         // Only filter client-side if searching
-        !searchTerm || 
+        !searchTerm ||
         (image.id && image.id.toString().includes(searchTerm)) ||
         (image.ref_id && image.ref_id.toString().includes(searchTerm)) ||
         (image.image_path && image.image_path.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-    
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewImage({
@@ -43,23 +43,23 @@ const Main = ({
             [name]: value
         });
     };
-    
+
     const handleFileSelect = (e) => {
         if (e.target.files.length > 0) {
             setSelectedFile(e.target.files[0]);
         }
     };
-    
+
     // const handleSubmit = (e) => {
     //     e.preventDefault();
-        
+
     //     if (!selectedFile) {
     //         alert("กรุณาเลือกรูปภาพ");
     //         return;
     //     }
-        
+
     //     onAddImage(newImage, selectedFile);
-        
+
     //     // Reset form
     //     setNewImage({
     //         ref_id: null,
@@ -68,34 +68,34 @@ const Main = ({
     //     setSelectedFile(null);
     // };
 
-     const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!selectedFile) {
-      alert("กรุณาเลือกรูปภาพ");
-      return;
-    }
-    if (!description) {
-      alert("กรุณากรอกรายละเอียด");
-      return;
-    }
-    
-    // Include the description in your newImage object
-    const imageData = {
-      ...newImage,
-      description: description
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (!selectedFile) {
+            alert("กรุณาเลือกรูปภาพ");
+            return;
+        }
+        if (!description) {
+            alert("กรุณากรอกรายละเอียด");
+            return;
+        }
+
+        // Include the description in your newImage object
+        const imageData = {
+            ...newImage,
+            description: description
+        };
+
+        onAddImage(imageData, selectedFile, description);
+
+        // Reset form
+        setNewImage({
+            ref_id: null,
+            ref_type: refType
+        });
+        setSelectedFile(null);
+        setDescription("");
     };
-    
-    onAddImage(imageData, selectedFile,description);
-    
-    // Reset form
-    setNewImage({
-      ref_id: null,
-      ref_type: refType
-    });
-    setSelectedFile(null);
-    setDescription("");
-  };
 
     const toggleMenu = (index) => {
         if (openMenuIndex === index) {
@@ -104,11 +104,11 @@ const Main = ({
             setOpenMenuIndex(index);
         }
     };
-    
+
     const closeMenu = () => {
         setOpenMenuIndex(null);
     };
-    
+
     // Calculate total pages for pagination
     const totalPages = Math.ceil(pagination.total / pagination.limit);
 
@@ -117,7 +117,7 @@ const Main = ({
         const pages = [];
         const maxDisplayedPages = 5;
         const currentPage = pagination.currentPage;
-        
+
         if (totalPages <= maxDisplayedPages) {
             // Show all pages if total pages are less than max display
             for (let i = 1; i <= totalPages; i++) {
@@ -126,37 +126,37 @@ const Main = ({
         } else {
             // Always include first page
             pages.push(1);
-            
+
             // Calculate start and end of displayed pages
             let start = Math.max(2, currentPage - 1);
             let end = Math.min(totalPages - 1, currentPage + 1);
-            
+
             // Adjust if at edges
             if (currentPage <= 2) {
                 end = 4;
             } else if (currentPage >= totalPages - 1) {
                 start = totalPages - 3;
             }
-            
+
             // Add ellipsis if needed
             if (start > 2) {
                 pages.push('...');
             }
-            
+
             // Add middle pages
             for (let i = start; i <= end; i++) {
                 pages.push(i);
             }
-            
+
             // Add ellipsis if needed
             if (end < totalPages - 1) {
                 pages.push('...');
             }
-            
+
             // Always include last page
             pages.push(totalPages);
         }
-        
+
         return pages;
     };
 
@@ -181,7 +181,7 @@ const Main = ({
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    
+
                     {/* <select 
                         className="border border-gray-300 rounded-lg px-3 py-2 outline-none"
                         value={refType}
@@ -194,8 +194,8 @@ const Main = ({
                         ))}
                     </select> */}
                 </div>
-                
-                <button 
+
+                <button
                     className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center"
                     onClick={handleAddImage}
                 >
@@ -203,14 +203,14 @@ const Main = ({
                     เพิ่มรูปภาพ
                 </button>
             </div>
-            
+
             {/* Error Message */}
             {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-5">
                     {error}
                 </div>
             )}
-            
+
             {/* Loading State */}
             {loading && (
                 <div className="flex justify-center items-center p-10">
@@ -221,13 +221,13 @@ const Main = ({
                     </div>
                 </div>
             )}
-            
+
             {/* Empty State */}
             {!loading && images.length === 0 && (
                 <div className="bg-gray-50 rounded-lg p-10 text-center">
                     <h3 className="text-lg font-medium text-gray-700 mb-2">ไม่พบรูปภาพ</h3>
                     <p className="text-gray-500 mb-4">ยังไม่มีรูปภาพในระบบ หรือลองเปลี่ยนประเภทการค้นหา</p>
-                    <button 
+                    <button
                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
                         onClick={handleAddImage}
                     >
@@ -236,27 +236,29 @@ const Main = ({
                     </button>
                 </div>
             )}
-            
+
             {/* Gallery Grid */}
             {!loading && images.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredImages.map((image, index) => (
                         <div key={image.id} className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
                             {/* Image Preview */}
-                            <div 
+                            <div
                                 className="h-48 bg-gray-200 flex items-center justify-center relative cursor-pointer"
                                 onClick={() => handleViewDetail(image)}
                             >
-                                <Image 
-                                    src={`${baseUrl}/${image.image_path}`} 
-                                    alt={`รูปภาพ ${image.id}`}
-                                    className="w-full h-full object-cover animate-fadeInImg"
-                                    width={400}
-                                    height={300}
-                                    style={{ objectFit: 'cover' }}
-                                />
+                                {image.image_path ? (
+                                    <Image
+                                        src={`${baseUrl}/${image.image_path}`}
+                                        alt={`รูปภาพ ${image.id}`}
+                                        className="w-full h-full object-cover animate-fadeInImg"
+                                        width={400}
+                                        height={300}
+                                        style={{ objectFit: 'cover' }}
+                                    />
+                                ) : null}
                                 {/* Menu Button */}
-                                <button 
+                                <button
                                     className="absolute top-2 right-2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 rounded-full"
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -265,11 +267,11 @@ const Main = ({
                                 >
                                     <MoreVertical className="h-4 w-4" />
                                 </button>
-                                
+
                                 {/* Dropdown Menu */}
                                 {openMenuIndex === index && (
                                     <div className="absolute top-10 right-2 bg-white shadow-lg rounded-lg overflow-hidden z-10">
-                                        <button 
+                                        <button
                                             className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -280,7 +282,7 @@ const Main = ({
                                             <Eye className="h-4 w-4 mr-2" />
                                             ดูรายละเอียด
                                         </button>
-                                        <button 
+                                        <button
                                             className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -298,7 +300,7 @@ const Main = ({
                     ))}
                 </div>
             )}
-            
+
             {/* Pagination */}
             {!loading && totalPages > 1 && (
                 <div className="flex justify-between items-center mt-6 pt-4 border-t">
@@ -314,32 +316,31 @@ const Main = ({
                             <option value={50}>50</option>
                         </select> */}
                     </div>
-                    
+
                     <div className="flex items-center">
-                        <button 
+                        <button
                             className="p-2 border rounded-l-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={pagination.currentPage === 1}
                             onClick={() => onPageChange(pagination.currentPage - 1)}
                         >
                             <ChevronLeft className="h-5 w-5" />
                         </button>
-                        
+
                         {getPageNumbers().map((page, index) => (
-                            <button 
+                            <button
                                 key={index}
-                                className={`px-3 py-1 border-t border-b ${
-                                    page === pagination.currentPage 
-                                        ? 'bg-blue-500 text-white' 
+                                className={`px-3 py-1 border-t border-b ${page === pagination.currentPage
+                                        ? 'bg-blue-500 text-white'
                                         : 'hover:bg-gray-50'
-                                } ${page === '...' ? 'cursor-default' : ''}`}
+                                    } ${page === '...' ? 'cursor-default' : ''}`}
                                 onClick={() => page !== '...' && onPageChange(page)}
                                 disabled={page === '...'}
                             >
                                 {page}
                             </button>
                         ))}
-                        
-                        <button 
+
+                        <button
                             className="p-2 border rounded-r-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={pagination.currentPage === totalPages}
                             onClick={() => onPageChange(pagination.currentPage + 1)}
@@ -349,28 +350,29 @@ const Main = ({
                     </div>
                 </div>
             )}
-            
+
             {/* Add Image Modal */}
+
             {showAddModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg w-full max-w-xl shadow-xl transform transition-all animate-fade-in">
                         <div className="flex justify-between items-center border-b px-6 py-4 bg-gray-50 rounded-t-lg">
                             <h3 className="text-lg font-semibold text-gray-800">เพิ่มรูปภาพใหม่</h3>
-                            <button 
-                                onClick={onCloseModal} 
+                            <button
+                                onClick={onCloseModal}
                                 className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-1 rounded-full transition-colors"
                             >
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
-                        
+
                         <div className="p-6">
                             {/* File Upload */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     อัพโหลดรูปภาพ <span className="text-red-500">*</span>
                                 </label>
-                                <div 
+                                <div
                                     className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-colors"
                                     onClick={() => document.getElementById('fileUpload').click()}
                                 >
@@ -380,7 +382,7 @@ const Main = ({
                                                 width={800}
                                                 height={600}
                                                 src={selectedFile ? URL.createObjectURL(selectedFile) : "/path/to/placeholder-image.png"}
-                                                className="h-12 w-12 text-green-500 mb-3" 
+                                                className="h-12 w-12 text-green-500 mb-3"
                                                 alt="Selected file preview"
                                             />
                                             <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
@@ -395,16 +397,16 @@ const Main = ({
                                             <p className="text-xs text-gray-500 mt-1">PNG, JPG หรือ GIF (สูงสุด 5MB)</p>
                                         </>
                                     )}
-                                    <input 
-                                        type="file" 
-                                        id="fileUpload" 
-                                        className="hidden" 
+                                    <input
+                                        type="file"
+                                        id="fileUpload"
+                                        className="hidden"
                                         accept="image/*"
                                         onChange={handleFileSelect}
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Text Editor for Description */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -419,7 +421,7 @@ const Main = ({
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Footer */}
                             <div className="flex justify-end space-x-3 mt-8">
                                 <button

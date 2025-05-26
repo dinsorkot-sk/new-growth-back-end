@@ -13,6 +13,7 @@ const Sidebar = () => {
         { name: "ข่าวสาร & กิจกรรม", href: "/admin/news" },
         { name: "กระทู้คำถาม", href: "/admin/forum" },
         { name: "คลังรูปภาพ", href: "/admin/gallery" },
+        { name: "ประกาศทั่วไป", href: "/admin/board" },
         { name: "คลังความรู้ออนไลน์", href: "/admin/knowledge" },
         { name: "การรับสมัคร", href: "/admin/admission" },
         { name: "จัดการแอดมิน", href: "/admin/admin" },
