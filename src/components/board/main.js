@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Search, Plus, Eye, Trash, Edit, X, Upload, MoreVertical, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Plus, Eye, Trash, Edit, X, Upload, MoreVertical, ChevronLeft, ChevronRight, Image as ImageIcon, Loader2 } from "lucide-react";
 import Image from 'next/image';
 
 const Main = ({
     images,
     loading,
+    uploadLoading,
     error,
     pagination,
     refType,
@@ -27,6 +28,18 @@ const Main = ({
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
     const [description, setDescription] = useState("");
+    const [fileType, setFileType] = useState("image");
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    useEffect(() => {
+        if (selectedFile) {
+            const url = URL.createObjectURL(selectedFile);
+            setPreviewUrl(url);
+            return () => URL.revokeObjectURL(url);
+        }
+    }, [selectedFile]);
 
     const filteredImages = images.filter(image =>
         // Only filter client-side if searching
@@ -46,29 +59,14 @@ const Main = ({
 
     const handleFileSelect = (e) => {
         if (e.target.files.length > 0) {
-            setSelectedFile(e.target.files[0]);
+            const file = e.target.files[0];
+            const fileType = file.type.startsWith('image/') ? 'image' : 'video';
+            setFileType(fileType);
+            setSelectedFile(file);
         }
     };
 
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-
-    //     if (!selectedFile) {
-    //         alert("กรุณาเลือกรูปภาพ");
-    //         return;
-    //     }
-
-    //     onAddImage(newImage, selectedFile);
-
-    //     // Reset form
-    //     setNewImage({
-    //         ref_id: null,
-    //         ref_type: refType
-    //     });
-    //     setSelectedFile(null);
-    // };
-
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!selectedFile) {
@@ -80,21 +78,33 @@ const Main = ({
             return;
         }
 
-        // Include the description in your newImage object
-        const imageData = {
-            ...newImage,
-            description: description
-        };
+        setIsUploading(true);
+        setUploadProgress(0);
 
-        onAddImage(imageData, selectedFile, description);
+        try {
+            // Include the description in your newImage object
+            const imageData = {
+                ...newImage,
+                description: description
+            };
 
-        // Reset form
-        setNewImage({
-            ref_id: null,
-            ref_type: refType
-        });
-        setSelectedFile(null);
-        setDescription("");
+            await onAddImage(imageData, selectedFile, description);
+
+            // Reset form
+            setNewImage({
+                ref_id: null,
+                ref_type: refType
+            });
+            setSelectedFile(null);
+            setDescription("");
+            setPreviewUrl(null);
+        } catch (error) {
+            console.error("Upload error:", error);
+            alert("เกิดข้อผิดพลาดในการอัพโหลด กรุณาลองใหม่อีกครั้ง");
+        } finally {
+            setIsUploading(false);
+            setUploadProgress(0);
+        }
     };
 
     const toggleMenu = (index) => {
@@ -198,6 +208,7 @@ const Main = ({
                 <button
                     className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center"
                     onClick={handleAddImage}
+                    disabled={uploadLoading}
                 >
                     <Plus className="h-5 w-5 mr-2" />
                     เพิ่มรูปภาพ
@@ -212,7 +223,7 @@ const Main = ({
             )}
 
             {/* Loading State */}
-            {loading && (
+            {loading && !uploadLoading && (
                 <div className="flex justify-center items-center p-10">
                     <div className="loading-bounce">
                         <span className="loading-bounce-dot"></span>
@@ -230,6 +241,7 @@ const Main = ({
                     <button
                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
                         onClick={handleAddImage}
+                        disabled={uploadLoading}
                     >
                         <Plus className="h-5 w-5 inline mr-2" />
                         เพิ่มรูปภาพใหม่
@@ -248,14 +260,29 @@ const Main = ({
                                 onClick={() => handleViewDetail(image)}
                             >
                                 {image.image_path ? (
-                                    <Image
-                                        src={`${baseUrl}/${image.image_path}`}
-                                        alt={`รูปภาพ ${image.id}`}
-                                        className="w-full h-full object-cover animate-fadeInImg"
-                                        width={400}
-                                        height={300}
-                                        style={{ objectFit: 'cover' }}
-                                    />
+                                    image.image_path.toLowerCase().endsWith('.mp4') ? (
+                                        <video
+                                            className="w-full h-full object-cover animate-fadeInImg"
+                                            controls
+                                            preload="metadata"
+                                            playsInline
+                                        >
+                                            <source
+                                                src={`${baseUrl}/${image.image_path}`}
+                                                type="video/mp4"
+                                            />
+                                            ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
+                                        </video>
+                                    ) : (
+                                        <Image
+                                            src={`${baseUrl}/${image.image_path}`}
+                                            alt={`รูปภาพ ${image.id}`}
+                                            className="w-full h-full object-cover animate-fadeInImg"
+                                            width={400}
+                                            height={300}
+                                            style={{ objectFit: 'cover' }}
+                                        />
+                                    )
                                 ) : null}
                                 {/* Menu Button */}
                                 <button
@@ -302,7 +329,7 @@ const Main = ({
             )}
 
             {/* Pagination */}
-            {!loading && totalPages > 1 && (
+            {!loading && !uploadLoading && totalPages > 1 && (
                 <div className="flex justify-between items-center mt-6 pt-4 border-t">
                     <div className="flex items-center text-sm text-gray-500">
                         แสดง {Math.min(pagination.offset + 1, pagination.total)} - {Math.min(pagination.offset + pagination.limit, pagination.total)} จาก {pagination.total} รายการ
@@ -352,15 +379,15 @@ const Main = ({
             )}
 
             {/* Add Image Modal */}
-
             {showAddModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg w-full max-w-xl shadow-xl transform transition-all animate-fade-in">
+                    <div className="bg-white rounded-lg w-full max-w-xl shadow-xl transform transition-all animate-fade-in mx-auto">
                         <div className="flex justify-between items-center border-b px-6 py-4 bg-gray-50 rounded-t-lg">
                             <h3 className="text-lg font-semibold text-gray-800">เพิ่มรูปภาพใหม่</h3>
                             <button
                                 onClick={onCloseModal}
                                 className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-1 rounded-full transition-colors"
+                                disabled={isUploading}
                             >
                                 <X className="h-5 w-5" />
                             </button>
@@ -370,21 +397,41 @@ const Main = ({
                             {/* File Upload */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    อัพโหลดรูปภาพ <span className="text-red-500">*</span>
+                                    อัพโหลดรูปภาพหรือวิดีโอ <span className="text-red-500">*</span>
                                 </label>
                                 <div
-                                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-colors"
-                                    onClick={() => document.getElementById('fileUpload').click()}
+                                    className={`border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    onClick={() => !isUploading && document.getElementById('fileUpload').click()}
                                 >
-                                    {selectedFile ? (
+                                    {isUploading ? (
+                                        <div className="flex flex-col items-center">
+                                            <Loader2 className="h-12 w-12 text-green-500 animate-spin mb-3" />
+                                            <p className="text-sm font-medium text-gray-700">กำลังอัพโหลด...</p>
+                                            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                                <div 
+                                                    className="bg-green-500 h-2.5 rounded-full transition-all duration-300" 
+                                                    style={{ width: `${uploadProgress}%` }}
+                                                ></div>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1">{uploadProgress}%</p>
+                                        </div>
+                                    ) : selectedFile ? (
                                         <>
-                                            <Image
-                                                width={800}
-                                                height={600}
-                                                src={selectedFile ? URL.createObjectURL(selectedFile) : "/path/to/placeholder-image.png"}
-                                                className="h-12 w-12 text-green-500 mb-3"
-                                                alt="Selected file preview"
-                                            />
+                                            {fileType === 'image' ? (
+                                                <Image
+                                                    width={800}
+                                                    height={600}
+                                                    src={previewUrl}
+                                                    className="w-full h-auto max-h-64 object-contain mb-3"
+                                                    alt="Selected file preview"
+                                                />
+                                            ) : (
+                                                <video
+                                                    src={previewUrl}
+                                                    className="w-full h-auto max-h-64 object-contain mb-3"
+                                                    controls
+                                                />
+                                            )}
                                             <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
                                             <p className="text-xs text-gray-500 mt-1">
                                                 {Math.round(selectedFile.size / 1024)} KB
@@ -393,16 +440,17 @@ const Main = ({
                                     ) : (
                                         <>
                                             <Upload className="h-12 w-12 text-gray-400 mb-3" />
-                                            <p className="text-sm font-medium text-gray-700">คลิกเพื่ออัพโหลดรูปภาพ</p>
-                                            <p className="text-xs text-gray-500 mt-1">PNG, JPG หรือ GIF (สูงสุด 5MB)</p>
+                                            <p className="text-sm font-medium text-gray-700">คลิกเพื่ออัพโหลดรูปภาพหรือวิดีโอ</p>
+                                            <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF หรือ MP4 (สูงสุด 5MB)</p>
                                         </>
                                     )}
                                     <input
                                         type="file"
                                         id="fileUpload"
                                         className="hidden"
-                                        accept="image/*"
+                                        accept="image/*,video/*"
                                         onChange={handleFileSelect}
+                                        disabled={isUploading}
                                     />
                                 </div>
                             </div>
@@ -418,6 +466,7 @@ const Main = ({
                                         onChange={(e) => setDescription(e.target.value)}
                                         className="w-full min-h-32 p-3 rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                         placeholder="กรอกรายละเอียดของรูปภาพ..."
+                                        disabled={isUploading}
                                     />
                                 </div>
                             </div>
@@ -428,15 +477,24 @@ const Main = ({
                                     type="button"
                                     onClick={onCloseModal}
                                     className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                                    disabled={isUploading}
                                 >
                                     ยกเลิก
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleSubmit}
-                                    className="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium shadow-sm transition-colors"
+                                    className={`px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium shadow-sm transition-colors flex items-center ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    disabled={isUploading}
                                 >
-                                    เพิ่มรูปภาพ
+                                    {isUploading ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                            กำลังอัพโหลด...
+                                        </>
+                                    ) : (
+                                        'บันทึก'
+                                    )}
                                 </button>
                             </div>
                         </div>

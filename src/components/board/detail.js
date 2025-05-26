@@ -180,18 +180,33 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                 {/* Image Preview */}
                 <div className="md:w-1/2">
                     <div className="bg-gray-100 rounded-lg flex items-center justify-center p-2 h-80 shadow-inner animate-fadeInImg">
-                        <Image 
-                            src={`${baseUrl}/${image.image_path}`} 
-                            alt={`รูปภาพ ${image.id}`}
-                            className="max-w-full max-h-full object-contain rounded transition-all duration-500 shadow-lg"
-                            width={800}
-                            height={600}
-                            style={{ objectFit: 'contain' }}
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = `/api/placeholder/600/400`;
-                            }}
-                        />
+                        {image.image_path.toLowerCase().includes('video') ? (
+                            <video 
+                                className="w-full h-full object-cover"
+                                controls
+                                preload="metadata"
+                                playsInline
+                            >
+                                <source
+                                    src={`${baseUrl}/${image.image_path}`}
+                                    type="video/mp4"
+                                />
+                                ขอโทษค่ะ เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
+                            </video>
+                        ) : (
+                            <Image 
+                                src={`${baseUrl}/${image.image_path}`} 
+                                alt={`รูปภาพ ${image.id}`}
+                                className="max-w-full max-h-full object-contain rounded transition-all duration-500 shadow-lg"
+                                width={800}
+                                height={600}
+                                style={{ objectFit: 'contain' }}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = `/api/placeholder/600/400`;
+                                }}
+                            />
+                        )}
                     </div>
                     <div className="mt-4 bg-gray-50 p-4 rounded-lg shadow-sm">
                         <h3 className="font-medium text-gray-700 mb-3">ข้อมูลไฟล์</h3>

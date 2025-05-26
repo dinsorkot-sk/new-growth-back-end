@@ -10,6 +10,7 @@ const Index = ({ initialRefType = "board" }) => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [uploadLoading, setUploadLoading] = useState(false);
     const [error, setError] = useState(null);
     const [paginationState, setPaginationState] = useState({
         offset: 0,
@@ -39,7 +40,7 @@ const Index = ({ initialRefType = "board" }) => {
                    }
                }
             );
-            
+            console.log(response);
             if (isMounted) {
                 setImages(response.data.images || []);
                 setPaginationState(prev => ({
@@ -113,18 +114,16 @@ const Index = ({ initialRefType = "board" }) => {
     const handleAddImage = async (newImageData, file, description) => {
         console.log("เพิ่มรูปภาพใหม่:", description);
         try {
-            setLoading(true);
+            setUploadLoading(true);
             const token = Cookies.get("auth-token");
             
             // Create form data for file upload
             const formData = new FormData();
-            formData.append('image', file);
-            formData.append('ref_type', refType);
-            formData.append('ref_id', newImageData.ref_id || null);
+            formData.append('media', file);
             formData.append('description', description);
             // Upload image to server
             const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API}/board`,
+                `${process.env.NEXT_PUBLIC_API}/board/media`,
                 formData,
                 {
                     headers: {
@@ -133,7 +132,7 @@ const Index = ({ initialRefType = "board" }) => {
                     }
                 }
             );
-            
+            console.log(response);
             // Refresh images list
             fetchImages();
             setShowAddModal(false);
@@ -141,7 +140,7 @@ const Index = ({ initialRefType = "board" }) => {
             console.error("Error adding image:", err);
             alert("เกิดข้อผิดพลาดในการอัพโหลดรูปภาพ กรุณาลองใหม่อีกครั้ง");
         } finally {
-            setLoading(false);
+            setUploadLoading(false);
         }
     };
     
@@ -196,6 +195,7 @@ const Index = ({ initialRefType = "board" }) => {
                 <Main 
                     images={images} 
                     loading={loading}
+                    uploadLoading={uploadLoading}
                     error={error}
                     pagination={paginationValues}
                     refType={refType}
