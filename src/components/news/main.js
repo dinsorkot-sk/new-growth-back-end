@@ -31,6 +31,9 @@ const Main = ({ handleViewDetail }) => {
         try {
             setIsLoading(true);
             const token = Cookies.get("auth-token");
+            if (!token) {
+                router.push("/admin/login");
+            }
             const response = await axios.get(
                 `${process.env.NEXT_PUBLIC_API}/news?offset=${offset}&limit=${limit}&search=${searchQuery}&sort=${sortOrder}&category=${category}`,
                 { 
@@ -100,6 +103,9 @@ const Main = ({ handleViewDetail }) => {
     const confirmDelete = async () => {
         try {
             const token = Cookies.get("auth-token");
+            if (!token) {
+                router.push("/admin/login");
+            }
             await axios.delete(
                 `${process.env.NEXT_PUBLIC_API}/news/${selectedNews.id}`,
                 { 

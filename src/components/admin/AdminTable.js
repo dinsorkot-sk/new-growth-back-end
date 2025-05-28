@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 const AdminTable = () => {
   const [admins, setAdmins] = useState([]);
@@ -14,12 +15,16 @@ const AdminTable = () => {
   });
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   // Fetch admins data
   const fetchAdmins = async () => {
     try {
       setLoading(true);
       const token = Cookies.get("auth-token");
+      if (!token) {
+        router.push("/admin/login");
+      }
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/get-all-admins`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -88,6 +93,9 @@ const AdminTable = () => {
     e.preventDefault();
     try {
       const token = Cookies.get("auth-token");
+      if (!token) {
+        router.push("/admin/login");
+      }
       if (editId) {
         await axios.put(`${process.env.NEXT_PUBLIC_API}/${editId}`, formData, {
           headers: {
@@ -114,6 +122,9 @@ const AdminTable = () => {
     if (!confirm("Are you sure you want to delete this admin?")) return;
     try {
       const token = Cookies.get("auth-token");
+      if (!token) {
+        router.push("/admin/login");
+      }
       await axios.delete(`${process.env.NEXT_PUBLIC_API}/delete-admin-by-id/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`

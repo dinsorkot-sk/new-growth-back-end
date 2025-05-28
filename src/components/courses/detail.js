@@ -96,6 +96,9 @@ const Detail = ({ courseId }) => {
     try {
       setIsLoading(true);
       const token = Cookies.get("auth-token");
+      if (!token) {
+        router.push("/admin/login");
+      }
       const { data } = await axios.get(
         `${process.env.NEXT_PUBLIC_API}/course/${courseId}`,
         {
@@ -176,6 +179,9 @@ const Detail = ({ courseId }) => {
     try {
       const formData = new FormData();
       const token = Cookies.get("auth-token");
+      if (!token) {
+        router.push("/admin/login");
+      }
 
       // ข้อมูลพื้นฐาน
       formData.append("name", form.name);
@@ -288,6 +294,9 @@ const Detail = ({ courseId }) => {
     if (window.confirm("คุณต้องการลบวิดีโอนี้ใช่หรือไม่?")) {
       try {
         const token = Cookies.get("auth-token");
+        if (!token) {
+          router.push("/admin/login");
+        }
         await axios.delete(
           `${process.env.NEXT_PUBLIC_API}/video/delete/${course.resources.id}`,
           {
@@ -316,6 +325,9 @@ const Detail = ({ courseId }) => {
     try {
       setIsDeletingCourse(true);
       const token = Cookies.get("auth-token");
+      if (!token) {
+        router.push("/admin/login");
+      }
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API}/course/${courseId}`,
         {

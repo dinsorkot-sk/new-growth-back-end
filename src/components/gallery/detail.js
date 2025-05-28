@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, Download, Edit, Trash, ArrowLeft, Eye, Calendar, HardDrive, Maximize, User } from "lucide-react";
 import Image from 'next/image';
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center min-h-[400px] animate-fadeIn">
@@ -17,6 +18,7 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [description, setDescription] = useState(image.description || "");
     const [isSaving, setIsSaving] = useState(false);
+    const router = useRouter();
 
     const [editData, setEditData] = useState({
         ref_id: image?.ref_id
@@ -87,6 +89,10 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
             
             // Get the auth-token from cookies
             const authToken = Cookies.get('auth-token');
+            if (!authToken) {
+                router.push("/admin/login");
+            }
+
 
             // Call API to update the image description
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/image/${image.id}`, {

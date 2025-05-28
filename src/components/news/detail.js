@@ -39,6 +39,9 @@ const Detail = ({ id, mode: initialMode }) => {
             if (id && id !== "create") {
                 try {
                     const token = Cookies.get("auth-token");
+                    if (!token) {
+                        router.push("/admin/login");
+                    }
                     const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/news/${id}`, {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -100,7 +103,7 @@ const Detail = ({ id, mode: initialMode }) => {
         setIsSaving(true);
         const token = Cookies.get('auth-token');
         if (!token) {
-            alert('กรุณาเข้าสู่ระบบอีกครั้ง');
+            router.push("/admin/login");
             setIsSaving(false);
             return;
         }

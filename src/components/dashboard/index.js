@@ -87,11 +87,15 @@ const Index = () => {
         setIsLoading(true);
         const baseURL = process.env.NEXT_PUBLIC_API || '';
         const token = Cookies.get('auth-token') || '';
+        if (!token) {
+          router.push("/admin/login");
+        }
         const response = await axios.get(`${baseURL}/dashboard`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setData(response.data);
       } catch (err) {
+        Cookies.remove('auth-token');
         setError(err.message);
       } finally {
         setIsLoading(false);

@@ -115,7 +115,9 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
             setStatusMessage({ type: 'info', text: 'กำลังอัปเดตสถานะ...' });
 
             const authToken = Cookies.get('auth-token');
-
+            if (!authToken) {
+                router.push("/admin/login");
+            }
             // เรียก API เพื่ออัปเดตสถานะ
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/answer/${answerId}`, {
                 method: 'PUT',

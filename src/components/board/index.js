@@ -4,8 +4,10 @@ import Detail from "./detail";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 const Index = ({ initialRefType = "board" }) => { 
+    const router = useRouter();
     const [images, setImages] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -32,6 +34,9 @@ const Index = ({ initialRefType = "board" }) => {
             setLoading(true);
             const { offset, limit } = paginationValues;
             const authToken = Cookies.get("auth-token");
+            if (!authToken) {
+                router.push("/admin/login");
+            }
             const response = await axios.get(
                `${process.env.NEXT_PUBLIC_IMG}/api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`,
                {
@@ -116,7 +121,9 @@ const Index = ({ initialRefType = "board" }) => {
         try {
             setUploadLoading(true);
             const token = Cookies.get("auth-token");
-            
+            if (!token) {
+                router.push("/admin/login");
+            }
             // Create form data for file upload
             const formData = new FormData();
             formData.append('media', file);
@@ -150,7 +157,9 @@ const Index = ({ initialRefType = "board" }) => {
             try {
                 setLoading(true);
                 const token = Cookies.get("auth-token");
-                
+                if (!token) {
+                    router.push("/admin/login");
+                }
                 // Call API to delete image
                 await axios.delete(
                     `${process.env.NEXT_PUBLIC_API}/board/${imageToDelete.id}`,

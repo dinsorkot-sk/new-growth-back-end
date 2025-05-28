@@ -5,8 +5,10 @@ import Form from "./form";
 import List from "./list";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 const DocumentIndex = () => {
+  const router = useRouter();
   const [view, setView] = useState("list"); // list หรือ form
   const [currentDocument, setCurrentDocument] = useState(null);
   const [documents, setDocuments] = useState([]);
@@ -22,6 +24,9 @@ const DocumentIndex = () => {
     setIsLoading(true);
     try {
       const token = Cookies.get("auth-token");
+      if (!token) {
+        router.push("/admin/login");
+      }
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_IMG}/api/document/getallDocumentAndResouceVideo?offset=${offset}&limit=${limit}`,
         {
@@ -119,6 +124,9 @@ const DocumentIndex = () => {
   const handleSave = async (formData) => {
     try {
       const token = Cookies.get("auth-token");
+      if (!token) {
+        router.push("/admin/login");
+      }
       const formDataToSend = new FormData();
       
       // Check if the file is a video
@@ -200,6 +208,9 @@ const DocumentIndex = () => {
     if (window.confirm("คุณต้องการลบเอกสารนี้ใช่หรือไม่?")) {
       try {
         const token = Cookies.get("auth-token");
+        if (!token) {
+          router.push("/admin/login");
+        }
         await axios.delete(
           `${process.env.NEXT_PUBLIC_API}/video/delete/${id}`,
           {
@@ -221,6 +232,9 @@ const DocumentIndex = () => {
   const handleDownload = async (id, fileName) => {
     try {
       const token = Cookies.get("auth-token");
+      if (!token) {
+        router.push("/admin/login");
+      }
       console.log("download", id);
       // Find the document to get its type
       const docItem = documents.find(doc => doc.id === id);

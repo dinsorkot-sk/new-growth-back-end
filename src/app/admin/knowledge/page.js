@@ -11,7 +11,7 @@ const ActivityPage = () => {
             <div className="fixed top-0">
                 <Sidebar />
             </div>
-            <div className="ms-56 flex-1 ">
+            <div className="ms-56 flex-1 overflow-x-hidden">
                 <div className="bg-white rounded-md shadow-sm mb-6">
                     <div className="p-4">
                         <ActivityForm />

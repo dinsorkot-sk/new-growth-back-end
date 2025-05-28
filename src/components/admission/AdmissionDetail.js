@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API + "/admission";
 
@@ -23,6 +24,7 @@ export default function AdmissionDetail() {
   const [form, setForm] = useState(initialForm);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   // โหลดข้อมูลทั้งหมด
   const fetchAdmissions = async () => {
@@ -80,6 +82,9 @@ export default function AdmissionDetail() {
     e.preventDefault();
     try {
       const token = Cookies.get('auth-token');
+      if (!token) {
+        router.push("/admin/login");
+      }
       if (editId) {
         await axios.put(`${API_URL}/${editId}`, form, {
           headers: {

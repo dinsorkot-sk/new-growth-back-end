@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 const AddQuestionModal = ({ onClose, onSave, selectedCategory }) => {
     const [questionText, setQuestionText] = useState("");
     const [categoryId, setCategoryId] = useState(selectedCategory?.id || "");
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
     
     useEffect(() => {
         if (selectedCategory) {
@@ -39,7 +41,10 @@ const AddQuestionModal = ({ onClose, onSave, selectedCategory }) => {
             
             // Retrieve the auth-token cookie
             const authToken = Cookies.get("auth-token"); // Get the auth-token cookie
-            
+            if (!authToken) {
+                router.push("/admin/login");
+            }
+
             // Send data to the API
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/topic`, {
                 method: 'POST',

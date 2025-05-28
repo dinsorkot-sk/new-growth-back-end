@@ -13,6 +13,9 @@ const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
     const handleDeleteTopic = async (topicId) => {
         try {
             const authToken = Cookies.get('auth-token');
+            if (!authToken) {
+                router.push("/admin/login");
+            }
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/topic/${topicId}`, {
                 method: 'DELETE',
                 headers: {

@@ -79,7 +79,10 @@ const Main = () => {
       setLoading(true);
       const offset = (currentPage - 1) * limit;
       const token = Cookies.get("auth-token");
-
+      if (!token) {
+        router.push("/admin/login");
+      }
+      
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API}/course`,
         {

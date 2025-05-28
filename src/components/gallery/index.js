@@ -31,6 +31,9 @@ const Index = ({ initialRefType = "course" }) => {
             setLoading(true);
             const { offset, limit } = paginationValues;
             const authToken = Cookies.get("auth-token");
+            if (!authToken) {
+                router.push("/admin/login");
+            }
             const response = await axios.get(
                `${process.env.NEXT_PUBLIC_IMG}/api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`,
                {
@@ -115,7 +118,10 @@ const Index = ({ initialRefType = "course" }) => {
         try {
             setLoading(true);
             const token = Cookies.get("auth-token");
-            
+            if (!token) {
+                router.push("/admin/login");
+            }
+
             // Create form data for file upload
             const formData = new FormData();
             formData.append('image', file);
@@ -151,6 +157,9 @@ const Index = ({ initialRefType = "course" }) => {
             try {
                 setLoading(true);
                 const token = Cookies.get("auth-token");
+                if (!token) {
+                    router.push("/admin/login");
+                }
                 
                 // Call API to delete image
                 await axios.delete(

@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import QuestionsIndex from "./index";
 import LoadingSpinner from "./loading";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation"
 
 const ForumContent = () => {
+  const router = useRouter();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,6 +25,9 @@ const ForumContent = () => {
       const offset = (pageNumber - 1) * limit;
       
       const authToken = Cookies.get("auth-token");
+      if (!authToken) {
+        router.push("/admin/login");
+      }
       
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API}/topic?offset=${offset}&limit=${limit}&order=asc`, {
