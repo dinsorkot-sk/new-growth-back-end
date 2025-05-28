@@ -234,10 +234,10 @@ const Main = ({ handleViewDetail }) => {
                             <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                                 {/* ส่วนภาพ */}
                                 <div className="bg-gray-200 h-64 w-full relative overflow-hidden">
-                                    {item.image?.image_path ? (
+                                    {(item.image?.image_path || (item.images && item.images.length > 0)) ? (
                                         <div className="relative w-full h-64">
                                             <Image
-                                                src={`${process.env.NEXT_PUBLIC_IMG}/${item.image.image_path}`}
+                                                src={`${process.env.NEXT_PUBLIC_IMG}/${item.image?.image_path || item.images[0].image_path}`}
                                                 alt={item.title}
                                                 fill
                                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

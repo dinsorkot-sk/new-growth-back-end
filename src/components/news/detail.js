@@ -6,6 +6,8 @@ import Cookies from 'js-cookie';
 import axios from 'axios'; // เพิ่มการนำเข้า axios
 import { useRouter } from "next/navigation";
 import Image from 'next/image';
+import ImageUploadModal from '../ImageUploadModal'; // Import the new image modal component
+import VideoUploadModal from '../VideoUploadModal'; // Import the new video modal component
 
 
 const QuillEditor = dynamic(() => import('../quillEditor'), {
@@ -16,11 +18,18 @@ const QuillEditor = dynamic(() => import('../quillEditor'), {
 const Detail = ({ id, mode: initialMode }) => {
     const router = useRouter();
     const [mode, setMode] = useState(initialMode === 'edit' || !id ? 'edit' : 'view');
-    const [imageFile, setImageFile] = useState(null);
+    const [imageFiles, setImageFiles] = useState([]);
+    const [imageDescriptions, setImageDescriptions] = useState([]);
     const [existingVideos, setExistingVideos] = useState([]);
+    const [existingImages, setExistingImages] = useState([]);
     const [videoFiles, setVideoFiles] = useState([]);
+    const [videoDescriptions, setVideoDescriptions] = useState([]);
     const [showVideoModal, setShowVideoModal] = useState(false);
+    const [showAddVideoModal, setShowAddVideoModal] = useState(false);
+    const [showImageModal, setShowImageModal] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [showImageViewModal, setShowImageViewModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [news, setNews] = useState(null);
@@ -38,9 +47,11 @@ const Detail = ({ id, mode: initialMode }) => {
         const fetchNews = async () => {
             if (id && id !== "create") {
                 try {
+                    setIsLoading(true);
                     const token = Cookies.get("auth-token");
                     if (!token) {
                         router.push("/admin/login");
+                        return;
                     }
                     const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/news/${id}`, {
                         headers: {
@@ -60,17 +71,19 @@ const Detail = ({ id, mode: initialMode }) => {
                         shortDescription: newsData?.short_description || "",
                     });
                     setExistingVideos(newsData?.resources || []);
+                    setExistingImages(newsData?.images || []);
                 } catch (error) {
                     console.error('Error fetching news:', error);
+                } finally {
+                    setIsLoading(false);
                 }
-            }
-            setMode(initialMode === 'edit' || !id ? 'edit' : 'view');
-            setTimeout(() => {
+            } else {
                 setIsLoading(false);
-            }, 500);
+            }
         };
 
         fetchNews();
+        setMode(initialMode === 'edit' || !id ? 'edit' : 'view');
     }, [id, initialMode]);
 
     const handleFormChange = (e) => {
@@ -116,26 +129,30 @@ const Detail = ({ id, mode: initialMode }) => {
         formPayload.append('status', formData.status);
         formPayload.append('short_description', formData.shortDescription);
 
-        if (imageFile) {
-            formPayload.append('image', imageFile);
-        }
-
-        videoFiles.forEach((file) => {
+        // Handle image uploads with descriptions
+        imageFiles.forEach((file, index) => {
+            formPayload.append('image', file);
+        });
+        formPayload.append('image_description', JSON.stringify(imageDescriptions));
+        
+        // Handle video uploads with descriptions
+        videoFiles.forEach((file, index) => {
             formPayload.append('video', file);
         });
-
-        // เพิ่ม keepVideoIds เฉพาะตอน PUT
+        formPayload.append('video_description', JSON.stringify(videoDescriptions));
+        
+        // Add keepVideoIds and keepImageIds for PUT
         if (id && id !== "create") {
-            formPayload.append('keep_video_ids', JSON.stringify(existingVideos.map(v => v.id)));
+            formPayload.append('keep_video_file_ids', JSON.stringify(existingVideos.map(v => v.id)));
+            formPayload.append('keep_image_ids', JSON.stringify(existingImages.map(img => img.id)));
         }
-
         try {
             const url = id && id !== "create"
                 ? `${process.env.NEXT_PUBLIC_API}/news/${id}`
                 : `${process.env.NEXT_PUBLIC_API}/news`;
 
             const method = id && id !== "create" ? 'put' : 'post';
-
+            
             const response = await axios({
                 method,
                 url,
@@ -178,6 +195,15 @@ const Detail = ({ id, mode: initialMode }) => {
 
     const handleRemoveExistingVideo = (index) => {
         setExistingVideos(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleRemoveExistingImage = (index) => {
+        setExistingImages(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleRemoveImage = (index) => {
+        setImageFiles(prev => prev.filter((_, i) => i !== index));
+        setImageDescriptions(prev => prev.filter((_, i) => i !== index));
     };
 
     const dateFormatter = (p_date) => {
@@ -269,16 +295,18 @@ const Detail = ({ id, mode: initialMode }) => {
                                 </button>
                             </div>
 
-                            {mode === 'view' && news?.image?.image_path && (
+                            {mode === 'view' && (
                                 <div className="mb-6">
-                                    <Image
-                                        src={`${process.env.NEXT_PUBLIC_IMG}/${news.image.image_path}`}
-                                        alt={formData.title}
-                                        className="w-full h-auto object-contain rounded-lg"
-                                        width={800}
-                                        height={600}
-                                        style={{ objectFit: 'contain' }}
-                                    />
+                                    {(news?.image?.image_path || (news?.images && news.images.length > 0)) && (
+                                        <Image
+                                            src={`${process.env.NEXT_PUBLIC_IMG}/${news?.image?.image_path || news.images[0].image_path}`}
+                                            alt={formData.title}
+                                            className="w-full h-auto object-contain rounded-lg"
+                                            width={800}
+                                            height={600}
+                                            style={{ objectFit: 'contain' }}
+                                        />
+                                    )}
                                 </div>
                             )}
 
@@ -360,23 +388,68 @@ const Detail = ({ id, mode: initialMode }) => {
 
                                     <div className="md:col-span-2">
                                         <label className="block text-gray-700 mb-2">อัพโหลดรูปภาพ</label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => setImageFile(e.target.files[0])}
-                                            className="w-full p-2 border border-gray-300 rounded-md"
-                                        />
+                                        <button
+                                            type="button"
+                                            className="w-full p-2 border border-gray-300 rounded-md text-left text-gray-500 hover:bg-gray-100 transition-colors duration-300"
+                                            onClick={() => setShowImageModal(true)}
+                                        >
+                                            <div className="flex items-center justify-center">
+                                                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                                </svg>
+                                                คลิกเพื่ออัพโหลดรูปภาพ
+                                            </div>
+                                        </button>
+                                        {/* แสดงรูปภาพที่มีอยู่แล้ว */}
+                                        {existingImages.length > 0 && (
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                {existingImages.map((image, index) => (
+                                                    <div key={index} className="bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2">
+                                                        <span>{image.image_path.split('/').pop()}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveExistingImage(index)}
+                                                            className="text-red-500 hover:text-red-700 cursor-pointer"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {/* รูปภาพที่อัพโหลดใหม่ */}
+                                        {imageFiles.length > 0 && (
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                {imageFiles.map((file, index) => (
+                                                    <div key={index} className="bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2">
+                                                        <span>{file.name}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveImage(index)}
+                                                            className="text-red-500 hover:text-red-700 cursor-pointer"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="md:col-span-2">
                                         <label className="block text-gray-700 mb-2">อัพโหลดวิดีโอ (สูงสุด 5 ไฟล์)</label>
-                                        <input
-                                            type="file"
-                                            accept="video/*"
-                                            multiple
-                                            onChange={handleVideoUpload}
-                                            className="w-full p-2 border border-gray-300 rounded-md"
-                                        />
+                                        <button
+                                            type="button"
+                                            className="w-full p-2 border border-gray-300 rounded-md text-left text-gray-500 hover:bg-gray-100 transition-colors duration-300"
+                                            onClick={() => setShowAddVideoModal(true)}
+                                        >
+                                             <div className="flex items-center justify-center">
+                                                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                                </svg>
+                                                คลิกเพื่ออัพโหลดวิดีโอ
+                                            </div>
+                                        </button>
                                         {/* วิดีโอที่มีอยู่แล้ว */}
                                         {existingVideos.length > 0 && (
                                             <div className="mt-2 flex flex-wrap gap-2">
@@ -413,6 +486,8 @@ const Detail = ({ id, mode: initialMode }) => {
                                             </div>
                                         )}
                                     </div>
+
+                                    
                                 </div>
                             )}
 
@@ -451,35 +526,102 @@ const Detail = ({ id, mode: initialMode }) => {
                                         {news.resources.map((video, index) => (
                                             <div
                                                 key={index}
-                                                className="relative cursor-pointer transform transition-all duration-300 hover:scale-105"
-                                                onClick={() => handleVideoClick(video)}
+                                                className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl"
                                             >
-                                                <video
-                                                    className="w-full h-48 object-cover rounded-lg shadow-md"
-                                                    src={`${process.env.NEXT_PUBLIC_IMG}/${video.files[0].file_path}`}
+                                                <div 
+                                                    className="relative cursor-pointer"
+                                                    onClick={() => handleVideoClick(video)}
                                                 >
-                                                    <source src={`${process.env.NEXT_PUBLIC_IMG}/${video.files[0].file_path}`} type="video/mp4" />
-                                                </video>
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black opacity-50 rounded-lg transition-opacity duration-300 hover:opacity-40">
-                                                    <svg
-                                                        className="w-12 h-12 text-white transform transition-transform duration-300 hover:scale-110"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
+                                                    <video
+                                                        className="w-full h-48 object-cover"
+                                                        src={`${process.env.NEXT_PUBLIC_IMG}/${video.files[0].file_path}`}
                                                     >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                                                        />
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        />
-                                                    </svg>
+                                                        <source src={`${process.env.NEXT_PUBLIC_IMG}/${video.files[0].file_path}`} type="video/mp4" />
+                                                    </video>
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black opacity-50 transition-opacity duration-300 hover:opacity-40">
+                                                        <svg
+                                                            className="w-12 h-12 text-white transform transition-transform duration-300 hover:scale-110"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div className="p-4">
+                                                    <h4 className="font-semibold text-gray-800 mb-2">วิดีโอ {index + 1}</h4>
+                                                    {video.description && (
+                                                        <p className="text-gray-600 text-sm">{video.description}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {mode === 'view' && news?.images && news.images.length > 0 && (
+                                <div className="mb-6">
+                                    <h3 className="font-semibold mb-3 text-gray-800">รูปภาพ</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {news.images.map((image, index) => (
+                                            <div
+                                                key={index}
+                                                className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl"
+                                            >
+                                                <div 
+                                                    className="relative cursor-pointer"
+                                                    onClick={() => {
+                                                        setSelectedImage(image);
+                                                        setShowImageViewModal(true);
+                                                    }}
+                                                >
+                                                    <Image
+                                                        src={`${process.env.NEXT_PUBLIC_IMG}/${image.image_path}`}
+                                                        alt={`Image ${index + 1}`}
+                                                        width={400}
+                                                        height={300}
+                                                        className="w-full h-48 object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black opacity-50 transition-opacity duration-300 hover:opacity-40">
+                                                        <svg
+                                                            className="w-12 h-12 text-white transform transition-transform duration-300 hover:scale-110"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div className="p-4">
+                                                    <h4 className="font-semibold text-gray-800 mb-2">รูปภาพ {index + 1}</h4>
+                                                    {image.description && (
+                                                        <p className="text-gray-600 text-sm">{image.description}</p>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -505,6 +647,41 @@ const Detail = ({ id, mode: initialMode }) => {
                                             controls
                                             src={`${process.env.NEXT_PUBLIC_IMG}/${selectedVideo.files[0].file_path}`}
                                         />
+                                        {selectedVideo.description && (
+                                            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                                <h4 className="font-semibold text-gray-800 mb-2">รายละเอียด</h4>
+                                                <p className="text-gray-600">{selectedVideo.description}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {showImageViewModal && selectedImage && (
+                                <div className="fixed inset-0 bg-[#00000050] flex items-center justify-center z-50 animate-fadeIn">
+                                    <div className="bg-white p-4 rounded-lg max-w-4xl w-full transform transition-all duration-300 animate-scaleIn">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="text-xl font-semibold text-gray-800">รูปภาพ</h3>
+                                            <button
+                                                onClick={() => setShowImageViewModal(false)}
+                                                className="text-5xl text-gray-500 hover:text-gray-700 transition-colors duration-300"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                        <Image
+                                            src={`${process.env.NEXT_PUBLIC_IMG}/${selectedImage.image_path}`}
+                                            alt="Selected image"
+                                            width={800}
+                                            height={600}
+                                            className="w-full rounded-lg shadow-lg"
+                                        />
+                                        {selectedImage.description && (
+                                            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                                <h4 className="font-semibold text-gray-800 mb-2">รายละเอียด</h4>
+                                                <p className="text-gray-600">{selectedImage.description}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -520,6 +697,27 @@ const Detail = ({ id, mode: initialMode }) => {
                         </button>
                     </div>
                 </>
+            )}
+
+            {showImageModal && (
+                <ImageUploadModal
+                    onClose={() => setShowImageModal(false)}
+                    onUpload={(files, descriptions) => {
+                        setImageFiles(prev => [...prev, ...files]);
+                        setImageDescriptions(prev => [...prev, ...descriptions]);
+                    }}
+                />
+            )}
+
+            {/* Render the add video modal */}
+            {showAddVideoModal && (
+                <VideoUploadModal
+                    onClose={() => setShowAddVideoModal(false)}
+                    onUpload={(files, descriptions) => {
+                        setVideoFiles(prev => [...prev, ...files]);
+                        setVideoDescriptions(prev => [...prev, ...descriptions]);
+                    }}
+                />
             )}
         </div>
     );
