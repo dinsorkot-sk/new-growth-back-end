@@ -562,9 +562,13 @@ const Detail = ({ id, mode: initialMode }) => {
                                                 </div>
                                                 <div className="p-4">
                                                     <h4 className="font-semibold text-gray-800 mb-2">วิดีโอ {index + 1}</h4>
+                                                    <div className="my-2 text-xs text-gray-500">
+                                                        <p>วันที่เผยแพร่: {dateFormatter(formData.publishDate)}</p>
+                                                    </div>
                                                     {video.description && (
                                                         <p className="text-gray-600 text-sm">{video.description}</p>
                                                     )}
+                                                    
                                                 </div>
                                             </div>
                                         ))}
@@ -619,9 +623,13 @@ const Detail = ({ id, mode: initialMode }) => {
                                                 </div>
                                                 <div className="p-4">
                                                     <h4 className="font-semibold text-gray-800 mb-2">รูปภาพ {index + 1}</h4>
+                                                    <div className="my-2 text-xs text-gray-500">
+                                                        <p>วันที่เผยแพร่: {dateFormatter(formData.publishDate)}</p>
+                                                    </div>
                                                     {image.description && (
                                                         <p className="text-gray-600 text-sm">{image.description}</p>
                                                     )}
+                                                  
                                                 </div>
                                             </div>
                                         ))}
