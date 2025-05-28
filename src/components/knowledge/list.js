@@ -299,9 +299,6 @@ const handlePageChange = (page) => {
                     ประเภท
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ผู้เขียน
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     วันที่เผยแพร่
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -334,9 +331,6 @@ const handlePageChange = (page) => {
                       >
                         {getFileTypeInThai(document)}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {document.author || "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {formatDate(document.published_date)}

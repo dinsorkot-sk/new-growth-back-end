@@ -8,11 +8,16 @@ export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const token = request.cookies.get('auth-token')?.value;
   const protectedPaths = [
-    '/admin/dashboard', '/admin/news', '/admin/knowledge', '/admin/gallery', '/admin/forum', '/admin/courses', '/admin/admission', '/admin/admin'
+    '/admin/dashboard', '/admin/news', '/admin/knowledge', '/admin/gallery', '/admin/forum', '/admin/courses', '/admin/admission', '/admin/admin','/admin/board'
   ];
 
   // Redirect root path to admin login
   if (pathname === '/') {
+    const url = new URL('/admin/login', request.url);
+    return NextResponse.redirect(url);
+  }
+
+  if (pathname === '/admin') {
     const url = new URL('/admin/login', request.url);
     return NextResponse.redirect(url);
   }

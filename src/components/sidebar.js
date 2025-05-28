@@ -24,7 +24,6 @@ const Sidebar = () => {
         // สร้างคุกกี้ชื่อ auth-token
         // ในระบบจริงควรมีการตรวจสอบรหัสผ่านก่อนสร้าง token
         Cookies.remove('auth-token');
-        router.push("/admin/login");
     }
 
     return (
