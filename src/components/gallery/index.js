@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const Index = ({ initialRefType = "course" }) => { 
+const Index = ({ initialRefType = "vibe" }) => { 
     const [images, setImages] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
