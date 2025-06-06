@@ -48,6 +48,7 @@ const Main = ({ handleViewDetail }) => {
                 ...prev,
                 total: response.data.total || 0
             }));
+            console.log(response.data.data)
             setCategories(response.data.tag)
             setError(null);
         } catch (err) {

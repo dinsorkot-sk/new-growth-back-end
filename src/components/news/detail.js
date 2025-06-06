@@ -60,13 +60,13 @@ const Detail = ({ id, mode: initialMode }) => {
                     });
                     const newsData = response.data;
                     setNews(newsData);
-                    
+                    console.log(newsData)
                     const initialCategories = newsData.tagAssignments?.map(t => t.tag.name) || [];
                     setFormData({
                         title: newsData?.title || "",
                         content: newsData?.content || "",
                         categories: initialCategories || [],
-                        publishDate: newsData?.publishDate || new Date().toISOString().split('T')[0],
+                        publishDate: newsData?.published_date ? new Date(newsData.published_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                         status: newsData?.status || "show",
                         shortDescription: newsData?.short_description || "",
                     });
@@ -163,7 +163,10 @@ const Detail = ({ id, mode: initialMode }) => {
                 }
             });
             console.log(response);
-            router.push(`/admin/news/${response.data.data.id}?mode=view`);
+            
+            // Use replace instead of push and wait for navigation to complete
+            await router.replace(`/admin/news/${response.data.data.id}?mode=view`);
+            setMode('view'); // Update the mode state
         } catch (error) {
             console.error('เกิดข้อผิดพลาดในการบันทึก:', error);
             alert('บันทึกข้อมูลไม่สำเร็จ');
