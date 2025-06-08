@@ -22,6 +22,10 @@ const Main = ({ handleViewDetail }) => {
         offset: 0,
         limit: 6,
         total: 0,
+        currentPage: 1,
+        totalPages: 1,
+        prev: null,
+        next: null
     });
     const [error, setError] = useState(null);
 
@@ -46,9 +50,12 @@ const Main = ({ handleViewDetail }) => {
             setNews(response.data.data || []);
             setPagination(prev => ({
                 ...prev,
-                total: response.data.total || 0
+                total: response.data.pagination.totalCount || 0,
+                currentPage: response.data.pagination.currentPage || 1,
+                totalPages: response.data.pagination.totalPages || 1,
+                prev: response.data.pagination.prev,
+                next: response.data.pagination.next
             }));
-            console.log(response.data.data)
             setCategories(response.data.tag)
             setError(null);
         } catch (err) {
@@ -126,23 +133,18 @@ const Main = ({ handleViewDetail }) => {
 
     // ส่วน Pagination
     const handlePagination = useCallback((action) => {
-        let newOffset = pagination.offset;
-        const totalPages = Math.ceil(pagination.total / pagination.limit);
-
-        if (action === "next") {
-            newOffset += pagination.limit;
-        } else if (action === "prev") {
-            newOffset -= pagination.limit;
+        if (action === "next" && pagination.next) {
+            const nextOffset = parseInt(new URL(pagination.next).searchParams.get('offset')) || 0;
+            setPagination(prev => ({ ...prev, offset: nextOffset }));
+        } else if (action === "prev" && pagination.prev) {
+            const prevOffset = parseInt(new URL(pagination.prev).searchParams.get('offset')) || 0;
+            setPagination(prev => ({ ...prev, offset: prevOffset }));
         }
-
-        if (newOffset >= 0 && newOffset < pagination.total) {
-            setPagination(prev => ({ ...prev, offset: newOffset }));
-        }
-    }, [pagination.offset, pagination.limit, pagination.total]);
+    }, [pagination.next, pagination.prev]);
 
     // คำนวณเลขหน้า
-    const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;
-    const totalPages = Math.ceil(pagination.total / pagination.limit);
+    const currentPage = pagination.currentPage;
+    const totalPages = pagination.totalPages;
 
     const dateFormatter = (p_date) => {
         const date = new Date(p_date);
@@ -318,38 +320,75 @@ const Main = ({ handleViewDetail }) => {
 
             {/* ส่วนเลขหน้า */}
             {totalPages > 1 && (
-                <div className="mt-6 flex justify-center gap-1">
-                    <button
-                        onClick={() => handlePagination("prev")}
-                        disabled={currentPage === 1}
-                        className="border rounded-md w-8 h-8 flex items-center justify-center disabled:opacity-50 transition-all duration-300 hover:bg-gray-100"
-                    >
-                        &lt;
-                    </button>
-
-                    {Array.from({ length: totalPages }, (_, i) => (
-                        <button
-                            key={i + 1}
-                            onClick={() => setPagination(prev => ({
-                                ...prev,
-                                offset: i * pagination.limit
-                            }))}
-                            className={`border rounded-md w-8 h-8 flex items-center justify-center transition-all duration-300 hover:bg-gray-100 ${
-                                currentPage === i + 1 ? "bg-blue-500 text-white hover:bg-blue-600" : ""
-                            }`}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
-
-                    <button
-                        onClick={() => handlePagination("next")}
-                        disabled={currentPage === totalPages}
-                        className="border rounded-md w-8 h-8 flex items-center justify-center disabled:opacity-50 transition-all duration-300 hover:bg-gray-100"
-                    >
-                        &gt;
-                    </button>
-                </div>
+                <nav aria-label="Page navigation">
+                    <ul className="flex items-center -space-x-px h-8 text-sm justify-center mt-4">
+                        <li>
+                            <button
+                                onClick={() => handlePagination("prev")}
+                                disabled={!pagination.prev}
+                                className="flex items-center justify-center px-3 h-8 ms-0 text-gray-500 bg-white cursor-pointer border border-gray-300 rounded-s-lg hover:bg-gray-100 disabled:opacity-50"
+                            >
+                                <span className="sr-only">Previous</span>
+                                <svg
+                                    className="w-2.5 h-2.5 rtl:rotate-180"
+                                    aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 6 10"
+                                >
+                                    <path
+                                        stroke="currentColor"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M5 1 1 5l4 4"
+                                    />
+                                </svg>
+                            </button>
+                        </li>
+                        {Array.from({ length: totalPages }, (_, i) => (
+                            <li key={i + 1}>
+                                <button
+                                    onClick={() => setPagination(prev => ({
+                                        ...prev,
+                                        offset: i * pagination.limit
+                                    }))}
+                                    className={`flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 cursor-pointer ${
+                                        currentPage === i + 1
+                                            ? "bg-[#26A65B] text-white"
+                                            : "bg-white text-gray-500 hover:bg-gray-100"
+                                    }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            </li>
+                        ))}
+                        <li>
+                            <button
+                                onClick={() => handlePagination("next")}
+                                disabled={!pagination.next}
+                                className="flex items-center justify-center px-3 h-8 text-gray-500 bg-white cursor-pointer border border-gray-300 rounded-e-lg hover:bg-gray-100 disabled:opacity-50"
+                            >
+                                <span className="sr-only">Next</span>
+                                <svg
+                                    className="w-2.5 h-2.5 rtl:rotate-180"
+                                    aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 6 10"
+                                >
+                                    <path
+                                        stroke="currentColor"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="m1 9 4-4-4-4"
+                                    />
+                                </svg>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
             )}
 
             {/* Modal ยืนยันการลบ */}
