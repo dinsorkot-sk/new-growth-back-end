@@ -242,7 +242,7 @@ export default function AdmissionDetail() {
                     className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-200"
                     value={form.startDate}
                     onChange={e => setForm({ ...form, startDate: e.target.value })}
-                    required
+
                   />
                   <span>ถึง</span>
                   <input
@@ -250,7 +250,7 @@ export default function AdmissionDetail() {
                     className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-200"
                     value={form.endDate}
                     onChange={e => setForm({ ...form, endDate: e.target.value })}
-                    required
+                    
                   />
                 </div>
               </div>
@@ -262,7 +262,7 @@ export default function AdmissionDetail() {
                     className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-200"
                     value={form.selectionStartDate}
                     onChange={e => setForm({ ...form, selectionStartDate: e.target.value })}
-                    required
+                  
                   />
                   <span>ถึง</span>
                   <input
@@ -270,7 +270,7 @@ export default function AdmissionDetail() {
                     className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-200"
                     value={form.selectionEndDate}
                     onChange={e => setForm({ ...form, selectionEndDate: e.target.value })}
-                    required
+                   
                   />
                 </div>
               </div>
@@ -281,7 +281,7 @@ export default function AdmissionDetail() {
                   className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-200"
                   value={form.trainingStartDate}
                   onChange={e => setForm({ ...form, trainingStartDate: e.target.value })}
-                  required
+                
                 />
               </div>
               <div>
