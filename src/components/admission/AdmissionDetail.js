@@ -10,10 +10,10 @@ const API_URL = process.env.NEXT_PUBLIC_API + "/admission";
 const initialForm = {
   title: "",
   startDate: "",
-  endDate: "",
-  selectionStartDate: "",
-  selectionEndDate: "",
-  trainingStartDate: "",
+  endDate: null,
+  selectionStartDate: null,
+  selectionEndDate: null,
+  trainingStartDate: null,
   link_register: "",
 };
 
@@ -54,11 +54,11 @@ export default function AdmissionDetail() {
       setForm({
         title: admission.title || "",
         startDate: admission.startDate?.slice(0, 10) || "",
-        endDate: admission.endDate?.slice(0, 10) || "",
-        selectionStartDate: admission.selectionStartDate?.slice(0, 10) || "",
-        selectionEndDate: admission.selectionEndDate?.slice(0, 10) || "",
-        trainingStartDate: admission.trainingStartDate?.slice(0, 10) || "",
-        link_register: admission.link_register || "",
+        endDate: admission.endDate?.slice(0, 10) || null,
+        selectionStartDate: admission.selectionStartDate?.slice(0, 10) || null,
+        selectionEndDate: admission.selectionEndDate?.slice(0, 10) || null,
+        trainingStartDate: admission.trainingStartDate?.slice(0, 10) || null,
+        link_register: admission.link_register || null,
       });
       setEditId(admission.id);
     } else {
@@ -158,24 +158,38 @@ export default function AdmissionDetail() {
                       <span className="inline-block bg-green-100 text-green-800 rounded px-2 py-0.5 text-xs font-medium">
                         {adm.startDate?.slice(0, 10)}
                       </span>
-                      <span className="mx-1 text-gray-400">ถึง</span>
-                      <span className="inline-block bg-green-100 text-green-800 rounded px-2 py-0.5 text-xs font-medium">
-                        {adm.endDate?.slice(0, 10)}
-                      </span>
+                      {adm.endDate?.slice(0, 10) &&
+                        <>
+                          <span className="mx-1 text-gray-400">ถึง</span>
+                          <span className="inline-block bg-green-100 text-green-800 rounded px-2 py-0.5 text-xs font-medium">
+                            {adm.endDate.slice(0, 10)}
+                          </span>
+                        </>
+                      }
                     </td>
                     <td className="px-4 py-2 border-b border-gray-100 text-center align-middle whitespace-nowrap">
-                      <span className="inline-block bg-yellow-100 text-yellow-800 rounded px-2 py-0.5 text-xs font-medium">
-                        {adm.selectionStartDate?.slice(0, 10)}
-                      </span>
-                      <span className="mx-1 text-gray-400">ถึง</span>
-                      <span className="inline-block bg-yellow-100 text-yellow-800 rounded px-2 py-0.5 text-xs font-medium">
-                        {adm.selectionEndDate?.slice(0, 10)}
-                      </span>
+                      {adm.selectionStartDate?.slice(0, 10) &&
+                        <span className="inline-block bg-yellow-100 text-yellow-800 rounded px-2 py-0.5 text-xs font-medium">
+                          {adm.selectionStartDate?.slice(0, 10)}
+                        </span>
+                      }
+                      {adm.selectionEndDate?.slice(0, 10) &&
+                        <>
+                          <span className="mx-1 text-gray-400">ถึง</span>
+                          <span className="inline-block bg-yellow-100 text-yellow-800 rounded px-2 py-0.5 text-xs font-medium">
+                            {adm.selectionEndDate?.slice(0, 10)}
+                          </span>
+                        </>
+                      }
                     </td>
                     <td className="px-4 py-2 border-b border-gray-100 text-center align-middle whitespace-nowrap">
-                      <span className="inline-block bg-blue-100 text-blue-800 rounded px-2 py-0.5 text-xs font-medium">
-                        {adm.trainingStartDate?.slice(0, 10)}
-                      </span>
+                      {adm.trainingStartDate?.slice(0, 10) &&
+                        <>
+                          <span className="inline-block bg-blue-100 text-blue-800 rounded px-2 py-0.5 text-xs font-medium">
+                            {adm.trainingStartDate?.slice(0, 10)}
+                          </span>
+                        </>
+                      }
                     </td>
                     <td className="px-4 py-2 border-b border-gray-100 text-center align-middle break-all">
                       {adm.link_register ? (
@@ -250,7 +264,7 @@ export default function AdmissionDetail() {
                     className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-200"
                     value={form.endDate}
                     onChange={e => setForm({ ...form, endDate: e.target.value })}
-                    
+
                   />
                 </div>
               </div>
@@ -262,7 +276,7 @@ export default function AdmissionDetail() {
                     className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-200"
                     value={form.selectionStartDate}
                     onChange={e => setForm({ ...form, selectionStartDate: e.target.value })}
-                  
+
                   />
                   <span>ถึง</span>
                   <input
@@ -270,7 +284,7 @@ export default function AdmissionDetail() {
                     className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-200"
                     value={form.selectionEndDate}
                     onChange={e => setForm({ ...form, selectionEndDate: e.target.value })}
-                   
+
                   />
                 </div>
               </div>
@@ -281,7 +295,7 @@ export default function AdmissionDetail() {
                   className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-200"
                   value={form.trainingStartDate}
                   onChange={e => setForm({ ...form, trainingStartDate: e.target.value })}
-                
+
                 />
               </div>
               <div>
