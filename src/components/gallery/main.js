@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Search, Plus, Eye, Trash, Edit, X, Upload, MoreVertical, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react";
+import { Search, Plus, Eye, Trash, Edit, X, Upload, MoreVertical, ChevronLeft, ChevronRight, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
 import Image from 'next/image';
 
 const Main = ({ 
     images, 
+    videos,
     loading,
     error,
     pagination,
@@ -27,6 +28,7 @@ const Main = ({
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
     const [description, setDescription] = useState("");
+    const [uploadType, setUploadType] = useState('image'); // 'image' or 'video'
     
     const filteredImages = images.filter(image => 
         // Only filter client-side if searching
@@ -34,6 +36,15 @@ const Main = ({
         (image.id && image.id.toString().includes(searchTerm)) ||
         (image.ref_id && image.ref_id.toString().includes(searchTerm)) ||
         (image.image_path && image.image_path.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    
+    const filteredVideos = videos.filter(video =>
+        // Only filter client-side if searching
+        !searchTerm ||
+        (video.id && video.id.toString().includes(searchTerm)) ||
+        (video.ref_id && video.ref_id.toString().includes(searchTerm)) ||
+        (video.title && video.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (video.description && video.description.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     
     const handleInputChange = (e) => {
@@ -50,52 +61,35 @@ const Main = ({
         }
     };
     
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
+    const handleSubmit = (e) => {
+        e.preventDefault();
         
-    //     if (!selectedFile) {
-    //         alert("กรุณาเลือกรูปภาพ");
-    //         return;
-    //     }
+        if (!selectedFile) {
+            alert(uploadType === 'image' ? "กรุณาเลือกรูปภาพ" : "กรุณาเลือกวิดีโอ");
+            return;
+        }
+        if (!description) {
+            alert("กรุณากรอกรายละเอียด");
+            return;
+        }
         
-    //     onAddImage(newImage, selectedFile);
+        // Include the description in your newImage object
+        const mediaData = {
+            ...newImage,
+            description: description,
+        };
         
-    //     // Reset form
-    //     setNewImage({
-    //         ref_id: null,
-    //         ref_type: refType
-    //     });
-    //     setSelectedFile(null);
-    // };
-
-     const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!selectedFile) {
-      alert("กรุณาเลือกรูปภาพ");
-      return;
-    }
-    if (!description) {
-      alert("กรุณากรอกรายละเอียด");
-      return;
-    }
-    
-    // Include the description in your newImage object
-    const imageData = {
-      ...newImage,
-      description: description
+        onAddImage(mediaData, selectedFile, description, uploadType);
+        
+        // Reset form
+        setNewImage({
+            ref_id: null,
+            ref_type: refType
+        });
+        setSelectedFile(null);
+        setDescription("");
+        setUploadType('image'); // Reset to image after submission
     };
-    
-    onAddImage(imageData, selectedFile,description);
-    
-    // Reset form
-    setNewImage({
-      ref_id: null,
-      ref_type: refType
-    });
-    setSelectedFile(null);
-    setDescription("");
-  };
 
     const toggleMenu = (index) => {
         if (openMenuIndex === index) {
@@ -129,13 +123,13 @@ const Main = ({
             
             // Calculate start and end of displayed pages
             let start = Math.max(2, currentPage - 1);
-            let end = Math.min(totalPages - 1, currentPage + 1);
+            let end = Math.min(currentPage + 1, totalPages - 1);
             
             // Adjust if at edges
             if (currentPage <= 2) {
-                end = Math.min(4, totalPages - 1);
+                end = Math.min(3, totalPages - 1);
             } else if (currentPage >= totalPages - 1) {
-                start = Math.max(2, totalPages - 3);
+                start = Math.max(2, totalPages - 2);
             }
             
             // Add ellipsis if needed
@@ -177,24 +171,12 @@ const Main = ({
                         <Search className="h-5 w-5 text-gray-400 mr-2" />
                         <input
                             type="text"
-                            placeholder="ค้นหารูปภาพ..."
+                            placeholder="ค้นหารูปภาพและวิดีโอ..."
                             className="bg-transparent outline-none w-full"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    
-                    {/* <select 
-                        className="border border-gray-300 rounded-lg px-3 py-2 outline-none"
-                        value={refType}
-                        onChange={(e) => onRefTypeChange(e.target.value)}
-                    >
-                        {refTypeOptions.map(option => (
-                            <option key={option.value} value={option.value}>
-                                {option.label}
-                            </option>
-                        ))}
-                    </select> */}
                 </div>
                 
                 <button 
@@ -202,7 +184,7 @@ const Main = ({
                     onClick={handleAddImage}
                 >
                     <Plus className="h-5 w-5 mr-2" />
-                    เพิ่มรูปภาพ
+                    เพิ่มสื่อ
                 </button>
             </div>
             
@@ -225,24 +207,25 @@ const Main = ({
             )}
             
             {/* Empty State */}
-            {!loading && images.length === 0 && (
+            {!loading && images.length === 0 && videos.length === 0 && (
                 <div className="bg-gray-50 rounded-lg p-10 text-center">
-                    <h3 className="text-lg font-medium text-gray-700 mb-2">ไม่พบรูปภาพ</h3>
-                    <p className="text-gray-500 mb-4">ยังไม่มีรูปภาพในระบบ หรือลองเปลี่ยนประเภทการค้นหา</p>
+                    <h3 className="text-lg font-medium text-gray-700 mb-2">ไม่พบรูปภาพและวิดีโอ</h3>
+                    <p className="text-gray-500 mb-4">ยังไม่มีรูปภาพและวิดีโอในระบบ หรือลองเปลี่ยนประเภทการค้นหา</p>
                     <button 
                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
                         onClick={handleAddImage}
                     >
                         <Plus className="h-5 w-5 inline mr-2" />
-                        เพิ่มรูปภาพใหม่
+                        เพิ่มสื่อใหม่
                     </button>
                 </div>
             )}
             
             {/* Gallery Grid */}
-            {!loading && images.length > 0 && (
+            {!loading && (images.length > 0 || videos.length > 0) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredImages.map((image, index) => (
+                    {/* Display Images */}
+                    {images.map((image, index) => (
                         <div key={image.id} className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
                             {/* Image Preview */}
                             <div 
@@ -296,6 +279,70 @@ const Main = ({
                                     </div>
                                 )}
                             </div>
+                            {/* Image Description */}
+                            <div className="p-3">
+                                <p className="text-sm text-gray-600 line-clamp-2">{image.description}</p>
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* Display Videos */}
+                    {videos.map((video, index) => (
+                        <div key={video.id} className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                            {/* Video Preview */}
+                            <div 
+                                className="h-48 bg-gray-200 flex items-center justify-center relative cursor-pointer"
+                                onClick={() => handleViewDetail(video)}
+                            >
+                                <video 
+                                    src={`${baseUrl}/${video.files[0].file_path}`}
+                                    className="w-full h-full object-cover"
+                                    controls
+                                />
+                                {/* Menu Button */}
+                                <button 
+                                    className="absolute top-2 right-2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-1 rounded-full"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleMenu(index + images.length);
+                                    }}
+                                >
+                                    <MoreVertical className="h-4 w-4" />
+                                </button>
+                                
+                                {/* Dropdown Menu */}
+                                {openMenuIndex === index + images.length && (
+                                    <div className="absolute top-10 right-2 bg-white shadow-lg rounded-lg overflow-hidden z-10">
+                                        <button 
+                                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleViewDetail(video);
+                                                closeMenu();
+                                            }}
+                                        >
+                                            <Eye className="h-4 w-4 mr-2" />
+                                            ดูรายละเอียด
+                                        </button>
+                                        <button 
+                                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteImage(video);
+                                                closeMenu();
+                                            }}
+                                        >
+                                            <Trash className="h-4 w-4 mr-2" />
+                                            ลบ
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            {/* Video Description */}
+                            <div className="p-3">
+                                <h3 className="font-medium text-gray-800 mb-1">{video.title}</h3>
+                                <p className="text-sm text-gray-600 line-clamp-2">{video.description}</p>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -306,15 +353,6 @@ const Main = ({
                 <div className="flex justify-between items-center mt-6 pt-4 border-t">
                     <div className="flex items-center text-sm text-gray-500">
                         แสดง {Math.min(pagination.offset + 1, pagination.total)} - {Math.min(pagination.offset + pagination.limit, pagination.total)} จาก {pagination.total} รายการ
-                        {/* <select 
-                            className="ml-2 border border-gray-300 rounded px-2 py-1"
-                            value={pagination.limit}
-                            onChange={(e) => onLimitChange(Number(e.target.value))}
-                        >
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </select> */}
                     </div>
                     
                     <div className="flex items-center">
@@ -357,7 +395,7 @@ const Main = ({
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg w-full max-w-xl shadow-xl transform transition-all animate-fade-in">
                         <div className="flex justify-between items-center border-b px-6 py-4 bg-gray-50 rounded-t-lg">
-                            <h3 className="text-lg font-semibold text-gray-800">เพิ่มรูปภาพใหม่</h3>
+                            <h3 className="text-lg font-semibold text-gray-800">เพิ่มสื่อใหม่</h3>
                             <button 
                                 onClick={onCloseModal} 
                                 className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-1 rounded-full transition-colors"
@@ -367,10 +405,28 @@ const Main = ({
                         </div>
                         
                         <div className="p-6">
+                            {/* Upload Type Selection */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    ประเภทสื่อ <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={uploadType}
+                                    onChange={(e) => {
+                                        setUploadType(e.target.value);
+                                        setSelectedFile(null); // Reset file selection on type change
+                                    }}
+                                    className="block w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                >
+                                    <option value="image">รูปภาพ</option>
+                                    <option value="video">วิดีโอ</option>
+                                </select>
+                            </div>
+
                             {/* File Upload */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    อัพโหลดรูปภาพ <span className="text-red-500">*</span>
+                                    อัพโหลด{uploadType === 'image' ? 'รูปภาพ' : 'วิดีโอ'} <span className="text-red-500">*</span>
                                 </label>
                                 <div 
                                     className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-colors"
@@ -378,13 +434,17 @@ const Main = ({
                                 >
                                     {selectedFile ? (
                                         <>
-                                            <Image
-                                                width={800}
-                                                height={600}
-                                                src={selectedFile ? URL.createObjectURL(selectedFile) : "/path/to/placeholder-image.png"}
-                                                className="h-12 w-12 text-green-500 mb-3" 
-                                                alt="Selected file preview"
-                                            />
+                                            {uploadType === 'image' ? (
+                                                <Image
+                                                    width={800}
+                                                    height={600}
+                                                    src={URL.createObjectURL(selectedFile)}
+                                                    className="h-12 w-12 text-green-500 mb-3" 
+                                                    alt="Selected file preview"
+                                                />
+                                            ) : (
+                                                <VideoIcon className="h-12 w-12 text-green-500 mb-3" />
+                                            )}
                                             <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
                                             <p className="text-xs text-gray-500 mt-1">
                                                 {Math.round(selectedFile.size / 1024)} KB
@@ -392,16 +452,22 @@ const Main = ({
                                         </>
                                     ) : (
                                         <>
-                                            <Upload className="h-12 w-12 text-gray-400 mb-3" />
-                                            <p className="text-sm font-medium text-gray-700">คลิกเพื่ออัพโหลดรูปภาพ</p>
-                                            <p className="text-xs text-gray-500 mt-1">PNG, JPG หรือ GIF (สูงสุด 5MB)</p>
+                                            {uploadType === 'image' ? (
+                                                <Upload className="h-12 w-12 text-gray-400 mb-3" />
+                                            ) : (
+                                                <VideoIcon className="h-12 w-12 text-gray-400 mb-3" />
+                                            )}
+                                            <p className="text-sm font-medium text-gray-700">คลิกเพื่ออัพโหลด{uploadType === 'image' ? 'รูปภาพ' : 'วิดีโอ'}</p>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                {uploadType === 'image' ? 'PNG, JPG หรือ GIF (สูงสุด 5MB)' : 'MP4, MOV (สูงสุด 50MB)'}
+                                            </p>
                                         </>
                                     )}
                                     <input 
                                         type="file" 
                                         id="fileUpload" 
                                         className="hidden" 
-                                        accept="image/*"
+                                        accept={uploadType === 'image' ? 'image/*' : 'video/*'}
                                         onChange={handleFileSelect}
                                     />
                                 </div>
@@ -410,14 +476,14 @@ const Main = ({
                             {/* Text Editor for Description */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    รายละเอียดรูปภาพ
+                                    รายละเอียด{uploadType === 'image' ? 'รูปภาพ' : 'วิดีโอ'}
                                 </label>
                                 <div className="border border-gray-300 rounded-lg">
                                     <textarea
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                         className="w-full min-h-32 p-3 rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                        placeholder="กรอกรายละเอียดของรูปภาพ..."
+                                        placeholder="กรอกรายละเอียดของสื่อ..."
                                     />
                                 </div>
                             </div>
@@ -436,7 +502,7 @@ const Main = ({
                                     onClick={handleSubmit}
                                     className="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium shadow-sm transition-colors"
                                 >
-                                    เพิ่มรูปภาพ
+                                    เพิ่มสื่อ
                                 </button>
                             </div>
                         </div>

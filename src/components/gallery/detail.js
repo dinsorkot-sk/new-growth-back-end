@@ -20,6 +20,12 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
     const [isSaving, setIsSaving] = useState(false);
     const router = useRouter();
 
+    // Add debug logs
+    console.log('Image data:', image);
+    console.log('Base URL:', baseUrl);
+    console.log('Image path:', image?.image_path);
+    console.log('Video path:', image?.files?.[0]?.file_path);
+
     const [editData, setEditData] = useState({
         ref_id: image?.ref_id
     });
@@ -41,18 +47,18 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
         return "ไม่สามารถดึงข้อมูลได้";
     };
     
-    const getFileSize = (imagePath) => {
+    const getFileSize = (filePath) => {
         // In a real implementation, you could get file size from API
         // Here we'll return placeholder text
         return "ไม่สามารถดึงข้อมูลได้";
     };
 
     const handleDownload = () => {
-        // สร้าง URL ของรูปภาพ
-        const imageUrl = `${baseUrl}/${image.image_path}`;
+        // สร้าง URL ของไฟล์
+        const fileUrl = image.files ? `${baseUrl}/${image.files[0].file_path}` : `${baseUrl}/${image.image_path}`;
         
-        // ใช้ fetch เพื่อดาวน์โหลดรูปภาพเป็น Blob
-        fetch(imageUrl)
+        // ใช้ fetch เพื่อดาวน์โหลดไฟล์เป็น Blob
+        fetch(fileUrl)
             .then(response => response.blob())
             .then(blob => {
                 // สร้าง URL ชั่วคราวสำหรับ Blob
@@ -62,8 +68,9 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 
-                // ตั้งชื่อไฟล์จากชื่อรูปภาพ
-                a.download = image.image_path.split('/').pop();
+                // ตั้งชื่อไฟล์จากชื่อไฟล์
+                const fileName = image.files ? image.files[0].file_path.split('/').pop() : image.image_path.split('/').pop();
+                a.download = fileName;
                 
                 // เพิ่ม element เข้าไปใน DOM และคลิกเพื่อดาวน์โหลด
                 document.body.appendChild(a);
@@ -74,7 +81,7 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                 window.URL.revokeObjectURL(blobUrl);
             })
             .catch(error => {
-                console.error('เกิดข้อผิดพลาดในการดาวน์โหลดรูปภาพ:', error);
+                console.error('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์:', error);
             });
     };
     
@@ -93,10 +100,9 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                 router.push("/admin/login");
             }
 
-
-            // Call API to update the image description
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/image/${image.id}`, {
-                method: 'PATCH',
+            // Call API to update the description
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/${isVideo ? 'document/update-document' : 'image'}/${image.id}`, {
+                method: isVideo ? 'PUT' : 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
@@ -115,14 +121,10 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
             setIsEditing(false);
             
             // Show success message
-            alert("บันทึกรายละเอียดรูปภาพเรียบร้อย");
-            
-            // ถ้าต้องการอัปเดตข้อมูลในหน้าจอโดยใช้ข้อมูลที่ได้รับกลับจาก API
-            // คุณสามารถเพิ่ม event callback เพื่อส่งข้อมูลกลับไปยัง parent component
-            // เช่น onImageUpdated(updatedData);
+            alert("บันทึกรายละเอียดเรียบร้อย");
             
         } catch (err) {
-            console.error("Error updating image description:", err);
+            console.error("Error updating description:", err);
             alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
         } finally {
             setIsSaving(false);
@@ -147,6 +149,8 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
         return <LoadingSpinner />;
     }
 
+    const isVideo = !!image.files;
+
     return (
         <div className="bg-white rounded-2xl drop-shadow-lg animate-fadeIn max-w-4xl mx-auto my-8 border border-gray-100">
             {/* Header */}
@@ -158,7 +162,9 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                     >
                         <ArrowLeft className="h-5 w-5" />
                     </button>
-                    <h2 className="text-xl font-semibold text-blue-700 tracking-wide">รายละเอียดรูปภาพ</h2>
+                    <h2 className="text-xl font-semibold text-blue-700 tracking-wide">
+                        {isVideo ? 'รายละเอียดวิดีโอ' : 'รายละเอียดรูปภาพ'}
+                    </h2>
                 </div>
                 <div className="flex items-center space-x-4">
                     <button 
@@ -183,21 +189,29 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
             </div>
             {/* Content */}
             <div className="p-6 flex flex-col md:flex-row gap-8">
-                {/* Image Preview */}
+                {/* Media Preview */}
                 <div className="md:w-1/2">
                     <div className="bg-gray-100 rounded-lg flex items-center justify-center p-2 h-80 shadow-inner animate-fadeInImg">
-                        <Image 
-                            src={`${baseUrl}/${image.image_path}`} 
-                            alt={`รูปภาพ ${image.id}`}
-                            className="max-w-full max-h-full object-contain rounded transition-all duration-500 shadow-lg"
-                            width={800}
-                            height={600}
-                            style={{ objectFit: 'contain' }}
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = `/api/placeholder/600/400`;
-                            }}
-                        />
+                        {isVideo ? (
+                            <video 
+                                src={`${baseUrl}/${image.files[0].file_path}`}
+                                className="max-w-full max-h-full object-contain rounded transition-all duration-500 shadow-lg"
+                                controls
+                            />
+                        ) : (
+                            <Image 
+                                src={`${baseUrl}/${image.image_path}`} 
+                                alt={`รูปภาพ ${image.id}`}
+                                className="max-w-full max-h-full object-contain rounded transition-all duration-500 shadow-lg"
+                                width={800}
+                                height={600}
+                                style={{ objectFit: 'contain' }}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = `/api/placeholder/600/400`;
+                                }}
+                            />
+                        )}
                     </div>
                     <div className="mt-4 bg-gray-50 p-4 rounded-lg shadow-sm">
                         <h3 className="font-medium text-gray-700 mb-3">ข้อมูลไฟล์</h3>
@@ -206,17 +220,21 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                                 <HardDrive className="h-4 w-4 mr-1" />
                                 <span>ชื่อไฟล์:</span>
                             </div>
-                            <span>{image.image_path.split('/').pop()}</span>
-                            <div className="flex items-center text-gray-500">
-                                <Maximize className="h-4 w-4 mr-1" />
-                                <span>ความละเอียด:</span>
-                            </div>
-                            <span>{getImageDimensions(image.image_path)}</span>
+                            <span>{isVideo ? image.files[0].file_path.split('/').pop() : image.image_path.split('/').pop()}</span>
+                            {!isVideo && (
+                                <>
+                                    <div className="flex items-center text-gray-500">
+                                        <Maximize className="h-4 w-4 mr-1" />
+                                        <span>ความละเอียด:</span>
+                                    </div>
+                                    <span>{getImageDimensions(image.image_path)}</span>
+                                </>
+                            )}
                             <div className="flex items-center text-gray-500">
                                 <Calendar className="h-4 w-4 mr-1" />
                                 <span>วันที่อัพโหลด:</span>
                             </div>
-                            <span>{formatDate(image.created_at)}</span>
+                            <span>{formatDate(image.created_at || image.published_date)}</span>
                             <div className="flex items-center text-gray-500">
                                 <User className="h-4 w-4 mr-1" />
                                 <span>ประเภท:</span>
@@ -230,7 +248,7 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                         </div>
                     </div>
                 </div>
-                {/* Image Information */}
+                {/* Media Information */}
                 <div className="md:w-1/2">
                     <div className="bg-gray-50 rounded-lg p-5">
                         <h3 className="font-medium text-gray-700 mb-4">ข้อมูลเพิ่มเติม</h3>
@@ -238,13 +256,13 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                         {isEditing ? (
                             <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
                                 <div className="flex justify-between items-center mb-3">
-                                    <h4 className="font-medium text-gray-700">รายละเอียดรูปภาพ</h4>
+                                    <h4 className="font-medium text-gray-700">รายละเอียด</h4>
                                 </div>
                                 <textarea
                                     className="w-full p-3 border border-gray-300 rounded-lg min-h-32 text-sm"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="กรอกรายละเอียดรูปภาพ"
+                                    placeholder="กรอกรายละเอียด"
                                 />
                                 <div className="flex justify-end mt-4 space-x-2">
                                     <button
@@ -267,18 +285,12 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                         ) : (
                             <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
                                 <div className="flex justify-between items-center mb-3">
-                                    <h4 className="font-medium text-gray-700">รายละเอียดรูปภาพ</h4>
-                                    {/* <button 
-                                        className="text-gray-500 hover:text-gray-700"
-                                        onClick={handleEdit}
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                    </button> */}
+                                    <h4 className="font-medium text-gray-700">รายละเอียด</h4>
                                 </div>
                                 {description ? (
                                     <p className="text-sm text-gray-600 whitespace-pre-line">{description}</p>
                                 ) : (
-                                    <p className="text-sm text-gray-400 italic">ไม่มีคำอธิบายรูปภาพ</p>
+                                    <p className="text-sm text-gray-400 italic">ไม่มีคำอธิบาย</p>
                                 )}
                             </div>
                         )}
@@ -291,7 +303,7 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                                 URL สำหรับใช้งาน:
                             </p>
                             <div className="bg-gray-100 p-2 rounded text-sm font-mono break-all">
-                                {`${baseUrl}/${image.image_path}`}
+                                {isVideo ? `${baseUrl}/${image.files[0].file_path}` : `${baseUrl}/${image.image_path}`}
                             </div>
                         </div>
                         
@@ -302,12 +314,12 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
                             </div>
                             <div className="flex justify-between text-sm mb-1">
                                 <span className="text-gray-500">ขนาดไฟล์:</span>
-                                <span className="font-medium">{getFileSize(image.image_path)}</span>
+                                <span className="font-medium">{getFileSize(isVideo ? image.files[0].file_path : image.image_path)}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-500">วันที่แก้ไขล่าสุด:</span>
                                 <span className="font-medium">
-                                    {image.updated_at ? formatDate(image.updated_at) : formatDate(image.created_at)}
+                                    {image.updated_at ? formatDate(image.updated_at) : formatDate(image.created_at || image.published_date)}
                                 </span>
                             </div>
                         </div>

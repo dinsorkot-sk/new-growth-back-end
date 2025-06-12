@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 
 const Index = ({ initialRefType = "vibe" }) => { 
     const [images, setImages] = useState([]);
+    const [videos, setVideos] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -26,7 +27,7 @@ const Index = ({ initialRefType = "vibe" }) => {
         currentPage: paginationState.currentPage
     }), [paginationState.offset, paginationState.limit, paginationState.total, paginationState.currentPage]);
     
-    // Fetch images from API
+    // Fetch images and videos from API
     const fetchImages = useCallback(async () => {
         let isMounted = true;
         try {
@@ -47,9 +48,10 @@ const Index = ({ initialRefType = "vibe" }) => {
             
             if (isMounted) {
                 setImages(response.data.images || []);
+                setVideos(response.data.videos || []);
                 setPaginationState(prev => ({
                     ...prev,
-                    total: response.data.pagination.images.total || 0,
+                    total: (response.data.pagination.images.total || 0) + (response.data.pagination.videos.total || 0),
                     offset: response.data.pagination.images.offset || 0,
                     limit: response.data.pagination.images.limit || 9
                 }));
@@ -60,6 +62,7 @@ const Index = ({ initialRefType = "vibe" }) => {
                 console.error("Error fetching images:", err);
                 setError("ไม่สามารถโหลดข้อมูลรูปภาพได้ กรุณาลองใหม่อีกครั้ง");
                 setImages([]); // Clear images on error
+                setVideos([]); // Clear videos on error
             }
         } finally {
             if (isMounted) {
@@ -117,8 +120,8 @@ const Index = ({ initialRefType = "vibe" }) => {
     };
     
     // Add new image
-    const handleAddImage = async (newImageData, file, description) => {
-        console.log("เพิ่มรูปภาพใหม่:", description);
+    const handleAddImage = async (mediaData, file, description, uploadType) => {
+        console.log(`เพิ่ม${uploadType === 'image' ? 'รูปภาพ' : 'วิดีโอ'}ใหม่:`, description);
         try {
             setLoading(true);
             const token = Cookies.get("auth-token");
@@ -128,13 +131,26 @@ const Index = ({ initialRefType = "vibe" }) => {
 
             // Create form data for file upload
             const formData = new FormData();
-            formData.append('image', file);
+            if (uploadType === 'image') {
+                formData.append('image', file);
+            } else {
+                formData.append('video', file); // Assuming the backend expects 'video' for video files
+                formData.append('title', mediaData.description); // Assuming video title is the description
+            }
             formData.append('ref_type', refType);
-            formData.append('ref_id', newImageData.ref_id || null);
+            formData.append('ref_id', mediaData.ref_id || null);
             formData.append('description', description);
-            // Upload image to server
+
+            let apiUrl = '';
+            if (uploadType === 'image') {
+                apiUrl = `${process.env.NEXT_PUBLIC_API}/image`;
+            } else {
+                apiUrl = `${process.env.NEXT_PUBLIC_API}/video/upload-video`; // Assuming this is the video upload endpoint
+            }
+
+            // Upload file to server
             const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API}/image`,
+                apiUrl,
                 formData,
                 {
                     headers: {
@@ -148,16 +164,19 @@ const Index = ({ initialRefType = "vibe" }) => {
             fetchImages();
             setShowAddModal(false);
         } catch (err) {
-            console.error("Error adding image:", err);
-            alert("เกิดข้อผิดพลาดในการอัพโหลดรูปภาพ กรุณาลองใหม่อีกครั้ง");
+            console.error(`Error adding ${uploadType === 'image' ? 'image' : 'video'}:`, err);
+            alert(`เกิดข้อผิดพลาดในการอัพโหลด${uploadType === 'image' ? 'รูปภาพ' : 'วิดีโอ'} กรุณาลองใหม่อีกครั้ง`);
         } finally {
             setLoading(false);
         }
     };
     
     // Delete image
-    const handleDeleteImage = async (imageToDelete) => {
-        if (confirm("คุณต้องการลบรูปภาพนี้ใช่หรือไม่?")) {
+    const handleDeleteImage = async (itemToDelete) => {
+        const isVideo = !!itemToDelete.files;
+        const confirmMessage = isVideo ? "คุณต้องการลบวิดีโอนี้ใช่หรือไม่?" : "คุณต้องการลบรูปภาพนี้ใช่หรือไม่?";
+
+        if (confirm(confirmMessage)) {
             try {
                 setLoading(true);
                 const token = Cookies.get("auth-token");
@@ -165,9 +184,16 @@ const Index = ({ initialRefType = "vibe" }) => {
                     router.push("/admin/login");
                 }
                 
-                // Call API to delete image
+                let apiUrl = '';
+                if (isVideo) {
+                    apiUrl = `${process.env.NEXT_PUBLIC_API}/admin/video/delete/${itemToDelete.id}`;
+                } else {
+                    apiUrl = `${process.env.NEXT_PUBLIC_API}/image/${itemToDelete.id}`;
+                }
+
+                // Call API to delete item
                 await axios.delete(
-                    `${process.env.NEXT_PUBLIC_API}/image/${imageToDelete.id}`,
+                    apiUrl,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -178,13 +204,13 @@ const Index = ({ initialRefType = "vibe" }) => {
                 // Refresh images list
                 fetchImages();
                 
-                // If viewing the deleted image, return to gallery
-                if (selectedImage && selectedImage.id === imageToDelete.id) {
+                // If viewing the deleted item, return to gallery
+                if (selectedImage && selectedImage.id === itemToDelete.id) {
                     setSelectedImage(null);
                 }
             } catch (err) {
-                console.error("Error deleting image:", err);
-                alert("เกิดข้อผิดพลาดในการลบรูปภาพ กรุณาลองใหม่อีกครั้ง");
+                console.error("Error deleting item:", err);
+                alert("เกิดข้อผิดพลาดในการลบข้อมูล กรุณาลองใหม่อีกครั้ง");
             } finally {
                 setLoading(false);
             }
@@ -207,7 +233,8 @@ const Index = ({ initialRefType = "vibe" }) => {
                 />
             ) : (
                 <Main 
-                    images={images} 
+                    images={images}
+                    videos={videos}
                     loading={loading}
                     error={error}
                     pagination={paginationValues}
@@ -222,7 +249,7 @@ const Index = ({ initialRefType = "vibe" }) => {
                     onAddImage={handleAddImage}
                     onCloseModal={() => setShowAddModal(false)}
                     baseUrl={`${process.env.NEXT_PUBLIC_IMG}`}
-                    isEmpty={!loading && (!images || images.length === 0)}
+                    isEmpty={!loading && (!images || images.length === 0) && (!videos || videos.length === 0)}
                 />
             )}
         </div>

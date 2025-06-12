@@ -13,6 +13,7 @@ const DocumentIndex = () => {
   const [currentDocument, setCurrentDocument] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedType, setSelectedType] = useState(""); // เพิ่ม state สำหรับเก็บประเภทที่เลือก
   const [pagination, setPagination] = useState({
     total: 0,
     offset: 0,
@@ -27,14 +28,18 @@ const DocumentIndex = () => {
       if (!token) {
         router.push("/admin/login");
       }
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_IMG}/api/document/getallDocumentAndResouceVideo?offset=${offset}&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+      
+      // สร้าง URL พร้อม query parameters
+      let url = `${process.env.NEXT_PUBLIC_IMG}/api/document/getallDocumentAndResouceVideo?offset=${offset}&limit=${limit}`;
+      if (selectedType) {
+        url += `&type=${selectedType}`;
+      }
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      );
+      });
 
       // ตรวจสอบว่ามีข้อมูลและโครงสร้างตามที่คาดหวังหรือไม่
       if (response.data && response.data.data) {
@@ -53,7 +58,7 @@ const DocumentIndex = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, [router, selectedType]);
 
   // เรียกข้อมูลเมื่อ component โหลดครั้งแรก
   useEffect(() => {
@@ -62,16 +67,17 @@ const DocumentIndex = () => {
 
   // ฟังก์ชันเมื่อมีการเปลี่ยนหน้า
   const handlePageChange = (page) => {
-    // ตรวจสอบว่าหน้าที่เลือกอยู่ในขอบเขตหรือไม่
-    
-    // คำนวณ offset จากเลขหน้า
-    // offset = (หน้าที่ต้องการ - 1) * จำนวนรายการต่อหน้า
     const newOffset = (page - 1) * pagination.limit;
-    
     console.log(`Changing to page ${page}, offset: ${newOffset}, limit: ${pagination.limit}`);
-    
-    // เรียกฟังก์ชันดึงข้อมูลด้วย offset และ limit
     fetchDocuments(newOffset, pagination.limit);
+  };
+
+  // เพิ่มฟังก์ชันสำหรับจัดการการเปลี่ยนประเภท
+  const handleTypeChange = (type) => {
+    setSelectedType(type);
+    // รีเซ็ต pagination และโหลดข้อมูลใหม่
+    setPagination(prev => ({ ...prev, offset: 0 }));
+    fetchDocuments(0, pagination.limit);
   };
 
   const handleAddNew = () => {
@@ -315,6 +321,8 @@ const DocumentIndex = () => {
           onView={handleView}
           onPageChange={handlePageChange}
           onDownload={handleDownload}
+          selectedType={selectedType}
+          onTypeChange={handleTypeChange}
         />
       ) : (
         <Form

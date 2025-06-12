@@ -20,6 +20,8 @@ const DocumentList = ({
   onView,
   onPageChange,
   onDownload,
+  selectedType,
+  onTypeChange,
 }) => {
   // Convert empty documents to empty array and memoize it
   const allDocuments = useMemo(() => documents || [], [documents]);
@@ -27,7 +29,6 @@ const DocumentList = ({
   // Add search state
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredDocuments, setFilteredDocuments] = useState(allDocuments);
-  const [typeFilter, setTypeFilter] = useState("");
 
   // Filter documents when search query or type filter changes
   useEffect(() => {
@@ -36,21 +37,10 @@ const DocumentList = ({
         doc.title &&
         doc.title.toLowerCase().includes(searchQuery.toLowerCase());
       
-      // Get file type from files array or fallback to document type
-      const docFileType = doc.files?.[0]?.file_type?.toLowerCase() || doc.type?.toLowerCase();
-      
-      const matchesType =
-        typeFilter === "" ||
-        (typeFilter === "pdf" && docFileType === "pdf") ||
-        (typeFilter === "video" && (docFileType === "video" || docFileType === "mp4")) ||
-        (typeFilter === "image" && ["jpg", "jpeg", "png", "gif"].includes(docFileType)) ||
-        (typeFilter === "document" && ["doc", "docx"].includes(docFileType)) ||
-        (typeFilter === "other" && !["pdf", "video", "mp4", "jpg", "jpeg", "png", "gif", "doc", "docx"].includes(docFileType) && docFileType !== undefined);
-      
-      return matchesSearch && matchesType;
+      return matchesSearch;
     });
     setFilteredDocuments(filtered);
-  }, [searchQuery, typeFilter, allDocuments]);
+  }, [allDocuments, searchQuery]);
 
   // Handler for search input changes
   const handleSearchChange = (e) => {
@@ -59,7 +49,7 @@ const DocumentList = ({
 
   // Handler for file type filter changes
   const handleTypeChange = (e) => {
-    setTypeFilter(e.target.value);
+    onTypeChange(e.target.value);
   };
 
   // ฟังก์ชันแสดงไอคอนตามประเภทเอกสาร
@@ -257,13 +247,11 @@ const handlePageChange = (page) => {
           <div className="w-full md:w-48">
             <select
               className="pl-3 pr-6 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-1 focus:ring-green-500"
-              value={typeFilter}
+              value={selectedType}
               onChange={handleTypeChange}
             >
               <option value="">ทั้งหมด</option>
               <option value="video">วิดีโอ</option>
-              <option value="image">รูปภาพ</option>
-              <option value="pdf">PDF</option>
               <option value="document">เอกสาร</option>
               <option value="other">อื่นๆ</option>
             </select>
@@ -283,7 +271,7 @@ const handlePageChange = (page) => {
           </div>
         ) : filteredDocuments.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            {searchQuery || typeFilter
+            {searchQuery || selectedType
               ? "ไม่พบเอกสารที่ตรงกับเงื่อนไขการค้นหา"
               : "ไม่พบข้อมูลเอกสาร"}
           </div>
