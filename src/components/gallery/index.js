@@ -21,8 +21,10 @@ const Index = ({ initialRefType = "vibe" }) => {
     
     const paginationValues = useMemo(() => ({
         offset: paginationState.offset,
-        limit: paginationState.limit
-    }), [paginationState.offset, paginationState.limit]);
+        limit: paginationState.limit,
+        total: paginationState.total,
+        currentPage: paginationState.currentPage
+    }), [paginationState.offset, paginationState.limit, paginationState.total, paginationState.currentPage]);
     
     // Fetch images from API
     const fetchImages = useCallback(async () => {
@@ -47,7 +49,9 @@ const Index = ({ initialRefType = "vibe" }) => {
                 setImages(response.data.images || []);
                 setPaginationState(prev => ({
                     ...prev,
-                    total: response.data.total || 0
+                    total: response.data.pagination.images.total || 0,
+                    offset: response.data.pagination.images.offset || 0,
+                    limit: response.data.pagination.images.limit || 9
                 }));
                 setError(null);
             }

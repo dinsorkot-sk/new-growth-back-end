@@ -133,9 +133,9 @@ const Main = ({
             
             // Adjust if at edges
             if (currentPage <= 2) {
-                end = 4;
+                end = Math.min(4, totalPages - 1);
             } else if (currentPage >= totalPages - 1) {
-                start = totalPages - 3;
+                start = Math.max(2, totalPages - 3);
             }
             
             // Add ellipsis if needed
@@ -153,8 +153,10 @@ const Main = ({
                 pages.push('...');
             }
             
-            // Always include last page
-            pages.push(totalPages);
+            // Always include last page if there is more than one page
+            if (totalPages > 1) {
+                pages.push(totalPages);
+            }
         }
         
         return pages;
