@@ -234,8 +234,9 @@ const DocumentIndex = () => {
       const token = Cookies.get("auth-token");
       if (!token) {
         router.push("/admin/login");
+        return;
       }
-      console.log("download", id);
+
       // Find the document to get its type
       const docItem = documents.find(doc => doc.id === id);
       if (!docItem) {
@@ -249,42 +250,55 @@ const DocumentIndex = () => {
       
       // ทำการเรียก API เพื่อดาวน์โหลดไฟล์
       const response = await axios.get(downloadUrl, {
-        responseType: "blob", // สำคัญมาก - ต้องระบุ responseType เป็น 'blob' สำหรับการดาวน์โหลดไฟล์
+        responseType: "blob",
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
 
+      console.log("Axios response:", response);
+      console.log("Response data size:", response.data ? response.data.size : 0);
+      console.log("Response headers:", response.headers);
+
       // Check if we have valid response data
-      if (!response.data) {
+      if (!response.data || response.data.size === 0) {
         throw new Error("No data received from server");
       }
 
-      // Get the file extension from file_type in files array
+      // Get the file extension and MIME type
       const fileExtension = docItem.files?.[0]?.file_type || 
                           (docItem.type?.toLowerCase() === 'video' ? 'mp4' : 
                           docItem.type?.toLowerCase() === 'pdf' ? 'pdf' : 
                           docItem.type?.toLowerCase() === 'image' ? 'jpg' : 'doc');
+      
+      const mimeType = response.headers['content-type'] || 
+                      (fileExtension === 'mp4' ? 'video/mp4' :
+                      fileExtension === 'pdf' ? 'application/pdf' :
+                      fileExtension === 'jpg' ? 'image/jpeg' : 'application/octet-stream');
 
-      // สร้าง URL object จาก blob response
-      const blob = new Blob([response.data]);
+      // Create blob with proper MIME type
+      const blob = new Blob([response.data], { type: mimeType });
       const url = window.URL.createObjectURL(blob);
+      console.log("Generated Blob URL:", url);
 
-      // สร้าง element <a> สำหรับดาวน์โหลด
+      // Create and trigger download
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${docItem.title || 'file'}.${fileExtension}`); // กำหนดชื่อไฟล์ดาวน์โหลด
-
-      // แนบ element เข้ากับ DOM, คลิก, และลบออก
+      link.setAttribute("download", `${docItem.title || 'file'}.${fileExtension}`);
+      
+      // Append to body, click, and cleanup
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 2000); // 2 seconds delay to ensure download starts before cleanup
 
-      // ล้าง URL object เพื่อปล่อยหน่วยความจำ
-      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading file:", error);
-      alert("เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์");
+      alert("เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์: " + error.message);
     }
   };
 
