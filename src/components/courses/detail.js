@@ -128,7 +128,7 @@ const Detail = ({ courseId }) => {
       setIsLoading(false);
       setIsDataLoaded(true);
     }
-  }, [courseId, initialFormState]);
+  }, [courseId, initialFormState, router]);
 
   useEffect(() => {
     fetchCourse();

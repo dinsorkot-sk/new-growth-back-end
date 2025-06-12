@@ -6,7 +6,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 
-const Index = ({ initialRefType = "board" }) => { 
+const Index = ({ initialRefType = "board" }) => {
     const router = useRouter();
     const [images, setImages] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -21,12 +21,12 @@ const Index = ({ initialRefType = "board" }) => {
         currentPage: 1
     });
     const [refType, setRefType] = useState(initialRefType);
-    
+
     const paginationValues = useMemo(() => ({
         offset: paginationState.offset,
         limit: paginationState.limit
     }), [paginationState.offset, paginationState.limit]);
-    
+
     // Fetch images from API
     const fetchImages = useCallback(async () => {
         let isMounted = true;
@@ -38,12 +38,12 @@ const Index = ({ initialRefType = "board" }) => {
                 router.push("/admin/login");
             }
             const response = await axios.get(
-               `${process.env.NEXT_PUBLIC_IMG}/api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`,
-               {
-                   headers: {
-                       Authorization: `Bearer ${authToken}`
-                   }
-               }
+                `${process.env.NEXT_PUBLIC_IMG}/api/image/getAllImage/${refType}?offset=${offset}&limit=${limit}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authToken}`
+                    }
+                }
             );
             console.log(response);
             if (isMounted) {
@@ -68,8 +68,8 @@ const Index = ({ initialRefType = "board" }) => {
         return () => {
             isMounted = false;
         };
-    }, [paginationValues, refType]);
-    
+    }, [paginationValues, refType, router]);
+
     // Load images on initial render or when pagination/refType changes
     useEffect(() => {
         const controller = new AbortController();
@@ -78,7 +78,7 @@ const Index = ({ initialRefType = "board" }) => {
             controller.abort();
         };
     }, [fetchImages]);
-    
+
     // Change page
     const handlePageChange = (newPage) => {
         const newOffset = (newPage - 1) * paginationValues.limit;
@@ -88,7 +88,7 @@ const Index = ({ initialRefType = "board" }) => {
             currentPage: newPage
         }));
     };
-    
+
     // Change items per page
     const handleLimitChange = (newLimit) => {
         setPaginationState(prev => ({
@@ -98,7 +98,7 @@ const Index = ({ initialRefType = "board" }) => {
             currentPage: 1
         }));
     };
-    
+
     // Change ref type
     const handleRefTypeChange = (newRefType) => {
         setRefType(newRefType);
@@ -108,13 +108,13 @@ const Index = ({ initialRefType = "board" }) => {
             currentPage: 1
         }));
     };
-    
+
     // View image details
     const handleViewDetail = (image) => {
         console.log("ดูรายละเอียด:", image);
         setSelectedImage(image);
     };
-    
+
     // Add new image
     const handleAddImage = async (newImageData, file, description) => {
         console.log("เพิ่มรูปภาพใหม่:", description);
@@ -150,7 +150,7 @@ const Index = ({ initialRefType = "board" }) => {
             setUploadLoading(false);
         }
     };
-    
+
     // Delete image
     const handleDeleteImage = async (imageToDelete) => {
         if (confirm("คุณต้องการลบรูปภาพนี้ใช่หรือไม่?")) {
@@ -169,10 +169,10 @@ const Index = ({ initialRefType = "board" }) => {
                         }
                     }
                 );
-                
+
                 // Refresh images list
                 fetchImages();
-                
+
                 // If viewing the deleted image, return to gallery
                 if (selectedImage && selectedImage.id === imageToDelete.id) {
                     setSelectedImage(null);
@@ -185,7 +185,7 @@ const Index = ({ initialRefType = "board" }) => {
             }
         }
     };
-    
+
     // Toggle add modal
     const toggleAddModal = () => {
         setShowAddModal(!showAddModal);
@@ -194,15 +194,15 @@ const Index = ({ initialRefType = "board" }) => {
     return (
         <div>
             {selectedImage ? (
-                <Detail 
-                    image={selectedImage} 
+                <Detail
+                    image={selectedImage}
                     onClose={() => setSelectedImage(null)}
                     onDelete={handleDeleteImage}
                     baseUrl={`${process.env.NEXT_PUBLIC_IMG}`}
                 />
             ) : (
-                <Main 
-                    images={images} 
+                <Main
+                    images={images}
                     loading={loading}
                     uploadLoading={uploadLoading}
                     error={error}

@@ -84,7 +84,7 @@ const Detail = ({ id, mode: initialMode }) => {
 
         fetchNews();
         setMode(initialMode === 'edit' || !id ? 'edit' : 'view');
-    }, [id, initialMode]);
+    }, [id, initialMode, router]);
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;

@@ -107,7 +107,7 @@ const Main = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, limit, searchTerm, sortOrder, category]);
+  }, [currentPage, limit, searchTerm, sortOrder, category , router]);
 
   useEffect(() => {
     fetchCourses();

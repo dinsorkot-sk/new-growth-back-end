@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
@@ -17,8 +17,8 @@ const AdminTable = () => {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  // Fetch admins data
-  const fetchAdmins = async () => {
+  // Wrap fetchAdmins in useCallback
+  const fetchAdmins = useCallback(async () => {
     try {
       setLoading(true);
       const token = Cookies.get("auth-token");
@@ -30,21 +30,20 @@ const AdminTable = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      // Handle nested admins array in response
       const adminData = response.data?.admins || [];
       setAdmins(adminData);
     } catch (err) {
       setError("Failed to fetch admin data");
       console.error("Error fetching admins:", err);
-      setAdmins([]); // Set empty array on error
+      setAdmins([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     fetchAdmins();
-  }, []);
+  }, [fetchAdmins]);
 
   // Open modal for add/edit
   const openModal = (admin = null) => {
@@ -203,7 +202,7 @@ const AdminTable = () => {
             <h2 className="text-xl font-semibold mb-4">
               {editId ? "แก้ไขผู้ดูแลระบบ" : "เพิ่มผู้ดูแลระบบ"}
             </h2>
-            
+
             {error && (
               <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
                 {error}

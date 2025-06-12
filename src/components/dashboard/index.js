@@ -102,7 +102,7 @@ const Index = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [router]);
 
   const coursesChartData = {
     labels: data?.courses?.map(c => c.name) || [],

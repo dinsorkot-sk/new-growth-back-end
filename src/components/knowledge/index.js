@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Form from "./form";
 import List from "./list";
 import axios from "axios";
@@ -19,8 +19,8 @@ const DocumentIndex = () => {
     limit: 10,
   });
 
-  // ฟังก์ชันสำหรับดึงข้อมูลจาก API
-  const fetchDocuments = async (offset = 0, limit = 10) => {
+  // Wrap fetchDocuments in useCallback
+  const fetchDocuments = useCallback(async (offset = 0, limit = 10) => {
     setIsLoading(true);
     try {
       const token = Cookies.get("auth-token");
@@ -53,12 +53,12 @@ const DocumentIndex = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router]);
 
   // เรียกข้อมูลเมื่อ component โหลดครั้งแรก
   useEffect(() => {
     fetchDocuments();
-  }, []);
+  }, [fetchDocuments]);
 
   // ฟังก์ชันเมื่อมีการเปลี่ยนหน้า
   const handlePageChange = (page) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import QuestionsIndex from "./index";
 import LoadingSpinner from "./loading";
 import Cookies from "js-cookie";
@@ -18,7 +18,7 @@ const ForumContent = () => {
     itemsPerPage: 10
   });
 
-  const fetchQuestions = async (pageNumber = 1, limit = 10) => {
+  const fetchQuestions = useCallback(async (pageNumber = 1, limit = 10) => {
     try {
       setLoading(true);
       setError(null);
@@ -96,7 +96,7 @@ const ForumContent = () => {
         itemsPerPage: 10
       });
     }
-  };
+  }, [router]);
 
   const handlePageChange = (pageNumber) => {
     fetchQuestions(pageNumber, pagination.itemsPerPage);
@@ -104,7 +104,7 @@ const ForumContent = () => {
  
   useEffect(() => {
     fetchQuestions(1, 10);
-  }, []);
+  }, [fetchQuestions]);
 
   if (loading) {
     return <LoadingSpinner />;

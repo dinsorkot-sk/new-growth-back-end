@@ -65,7 +65,7 @@ const Main = ({ handleViewDetail }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [offset, limit, searchQuery, sortOrder, category]);
+    }, [offset, limit, searchQuery, sortOrder, category, router]);
 
     // สร้าง debounced version ของ fetchNews
     const debouncedFetchNews = useMemo(
