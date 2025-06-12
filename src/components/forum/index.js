@@ -224,6 +224,80 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
             setIsLoading(false);
         }
     };
+
+    // ฟังก์ชันสำหรับเพิ่มคำตอบใหม่
+    const handleAddAnswer = async (questionId, answerData) => {
+        try {
+            setIsLoading(true);
+            setStatusMessage({ type: 'info', text: 'กำลังเพิ่มคำตอบ...' });
+
+            const authToken = Cookies.get('auth-token');
+            if (!authToken) {
+                router.push("/admin/login");
+                return;
+            }
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/answer`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({
+                    topic_id: questionId,
+                    answer_text: answerData.text,
+                    answered_by: answerData.user,
+                    status: "show"
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`ไม่สามารถเพิ่มคำตอบได้: ${response.statusText}`);
+            }
+
+            const newAnswer = await response.json();
+            
+            // อัปเดตข้อมูลในหน้าแอป
+            const updatedQuestions = questions.map(question => {
+                if (question.id === questionId) {
+                    return {
+                        ...question,
+                        answers: [...question.answers, {
+                            id: newAnswer.id,
+                            text: newAnswer.answer_text,
+                            user: { name: newAnswer.answered_by },
+                            createdAt: newAnswer.created_at,
+                            status: newAnswer.status
+                        }]
+                    };
+                }
+                return question;
+            });
+            
+            setQuestions(updatedQuestions);
+            setStatusMessage({ type: 'success', text: 'เพิ่มคำตอบเรียบร้อยแล้ว' });
+            
+            // ล้างข้อความสถานะหลังจาก 2 วินาที
+            setTimeout(() => {
+                setStatusMessage(null);
+            }, 2000);
+            
+            // รีเฟรชข้อมูลจาก API
+            if (onRefresh) {
+                onRefresh();
+            }
+        } catch (error) {
+            console.error("เกิดข้อผิดพลาดในการเพิ่มคำตอบ:", error);
+            setStatusMessage({ type: 'error', text: `เกิดข้อผิดพลาด: ${error.message}` });
+            
+            // ล้างข้อความสถานะหลังจาก 3 วินาที
+            setTimeout(() => {
+                setStatusMessage(null);
+            }, 3000);
+        } finally {
+            setIsLoading(false);
+        }
+    };
     
     return (
         <div className="flex flex-col gap-5">
@@ -271,6 +345,7 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
                     questions={filteredQuestions} 
                     onUpdateAnswerStatus={handleUpdateAnswerStatus}
                     onDeleteAnswer={handleDeleteAnswer}
+                    onAddAnswer={handleAddAnswer}
                 />
             ) : (
                 <div className="bg-white p-4 rounded-2xl drop-shadow text-center">

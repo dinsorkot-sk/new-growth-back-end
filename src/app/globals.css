@@ -112,3 +112,7 @@ body {
 .ql-editor p img {
   margin: 0 auto;
 }
+.ql-video {
+  width: 100%;
+  height: 18rem;
+}

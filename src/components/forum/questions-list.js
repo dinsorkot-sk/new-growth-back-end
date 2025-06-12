@@ -1,14 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, MessageCircle, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Cookies from "js-cookie";
 
-const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
+const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer, onAddAnswer }) => {
     const searchParams = useSearchParams();
     const questionId = searchParams.get('questionId');
     const hash = typeof window !== 'undefined' ? window.location.hash : '';
     const [confirmDeleteTopic, setConfirmDeleteTopic] = useState(null);
+    const router = useRouter();
 
     const handleDeleteTopic = async (topicId) => {
         try {
@@ -35,6 +36,35 @@ const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
         }
     };
 
+    const handleUpdateTopic = async (topicId, updateData) => {
+        try {
+            const authToken = Cookies.get('auth-token');
+            if (!authToken) {
+                router.push("/admin/login");
+                return;
+            }
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/topic/${topicId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
+                },
+                body: JSON.stringify(updateData),
+            });
+
+            if (!response.ok) {
+                throw new Error(`ไม่สามารถอัปเดตกระทู้ได้: ${response.statusText}`);
+            }
+
+            // Refresh the page to show updated data
+            window.location.reload();
+        } catch (error) {
+            console.error("เกิดข้อผิดพลาดในการอัปเดตกระทู้:", error);
+            alert(error.message);
+        }
+    };
+
     return (
         <>
             <div className="bg-white rounded-2xl overflow-hidden drop-shadow">
@@ -46,6 +76,8 @@ const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
                             isLast={index === questions.length - 1}
                             onUpdateAnswerStatus={onUpdateAnswerStatus}
                             onDeleteAnswer={onDeleteAnswer}
+                            onAddAnswer={onAddAnswer}
+                            onUpdateTopic={handleUpdateTopic}
                             isAutoExpanded={questionId && question.id.toString() === questionId}
                             targetAnswerId={hash.replace('#answer-', '')}
                             onDeleteTopic={handleDeleteTopic}
@@ -88,9 +120,13 @@ const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer }) => {
     );
 };
 
-const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, isAutoExpanded, targetAnswerId, onDeleteTopic, setConfirmDeleteTopic }) => {
+const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, onAddAnswer, onUpdateTopic, isAutoExpanded, targetAnswerId, onDeleteTopic, setConfirmDeleteTopic }) => {
     const [isOpen, setIsOpen] = useState(isAutoExpanded);
     const [confirmDelete, setConfirmDelete] = useState(null);
+    const [replyText, setReplyText] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [replyError, setReplyError] = useState("");
+    const router = useRouter();
 
     useEffect(() => {
         if (isAutoExpanded && targetAnswerId) {
@@ -136,6 +172,55 @@ const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, 
         setConfirmDelete(null);
     };
 
+    const handleSubmitReply = async (e) => {
+        e.preventDefault();
+        
+        if (!replyText.trim()) {
+            setReplyError("กรุณากรอกคำตอบ");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setReplyError("");
+
+        try {
+            const authToken = Cookies.get('auth-token');
+            if (!authToken) {
+                router.push("/admin/login");
+                return;
+            }
+
+            // Call the parent component's onAddAnswer function
+            await onAddAnswer(question.id, {
+                text: replyText.trim(),
+                user: "admin" // You might want to make this dynamic
+            });
+
+            // Clear the reply form
+            setReplyText("");
+            
+        } catch (error) {
+            console.error("เกิดข้อผิดพลาดในการเพิ่มคำตอบ:", error);
+            setReplyError(error.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleToggleTopicStatus = async (e) => {
+        e.stopPropagation();
+        try {
+            await onUpdateTopic(question.id, {
+                status: question.status === 'show' ? 'hide' : 'show',
+                title: question.text,
+                posted_by: question.postedBy,
+                is_approved: question.isApproved
+            });
+        } catch (error) {
+            console.error("เกิดข้อผิดพลาดในการอัปเดตสถานะกระทู้:", error);
+        }
+    };
+
     return (
         <div className={`${!isLast ? 'border-b border-gray-200' : ''}`}>
             <div 
@@ -150,6 +235,17 @@ const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, 
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    {/* Toggle Topic Status Button */}
+                    <button
+                        className={`p-1 rounded hover:bg-gray-100 ${question.status === 'show' ? 'text-green-500' : 'text-gray-400'}`}
+                        onClick={handleToggleTopicStatus}
+                        title={question.status === 'show' ? 'คลิกเพื่อปิดการใช้งาน' : 'คลิกเพื่อเปิดการใช้งาน'}
+                    >
+                        {question.status === 'show' ? 
+                            <ToggleRight size={25} /> : 
+                            <ToggleLeft size={25} />
+                        }
+                    </button>
                     <button
                         className="p-1 rounded hover:bg-gray-100 text-red-500 cursor-pointer"
                         onClick={(e) => {
@@ -262,6 +358,34 @@ const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, 
                             ยังไม่มีคำตอบสำหรับคำถามนี้
                         </div>
                     )}
+
+                    {/* Reply Form */}
+                    <div className="mt-4 border-t border-gray-200 pt-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">เพิ่มคำตอบ:</h4>
+                        <form onSubmit={handleSubmitReply} className="space-y-2">
+                            {replyError && (
+                                <div className="p-2 bg-red-50 text-red-700 text-sm rounded">
+                                    {replyError}
+                                </div>
+                            )}
+                            <textarea
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                placeholder="พิมพ์คำตอบของคุณที่นี่..."
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                rows={3}
+                            />
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:bg-green-300"
+                                >
+                                    {isSubmitting ? "กำลังส่ง..." : "ส่งคำตอบ"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>
