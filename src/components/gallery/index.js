@@ -186,7 +186,7 @@ const Index = ({ initialRefType = "vibe" }) => {
                 
                 let apiUrl = '';
                 if (isVideo) {
-                    apiUrl = `${process.env.NEXT_PUBLIC_API}/admin/video/delete/${itemToDelete.id}`;
+                    apiUrl = `${process.env.NEXT_PUBLIC_API}/video/delete/${itemToDelete.id}`;
                 } else {
                     apiUrl = `${process.env.NEXT_PUBLIC_API}/image/${itemToDelete.id}`;
                 }
