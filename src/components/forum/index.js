@@ -237,18 +237,18 @@ const QuestionsIndex = ({ questions: initialQuestions, pagination, onPageChange,
                 return;
             }
 
+            const formData = new FormData();
+            formData.append('topic_id', questionId);
+            formData.append('answer_text', answerData.text);
+            formData.append('answered_by', answerData.user);
+            formData.append('status', 'show');
+
             const response = await fetch(`${process.env.NEXT_PUBLIC_API}/answer`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`,
                 },
-                body: JSON.stringify({
-                    topic_id: questionId,
-                    answer_text: answerData.text,
-                    answered_by: answerData.user,
-                    status: "show"
-                }),
+                body: formData,
             });
 
             if (!response.ok) {

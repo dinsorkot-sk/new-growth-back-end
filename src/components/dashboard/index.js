@@ -1,22 +1,22 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
-import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
-  Title, 
-  Tooltip, 
-  Legend 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
 } from 'chart.js';
 import Link from 'next/link';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Book, 
-  MessageCircle, 
-  Calendar, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Book,
+  MessageCircle,
+  Calendar,
   Users,
   ChevronRight
 } from 'lucide-react';
@@ -146,8 +146,8 @@ const Index = () => {
         <div className="text-center p-8 bg-red-50 rounded-xl border border-red-200 shadow-lg">
           <div className="text-red-500 text-xl font-medium mb-2">เกิดข้อผิดพลาด</div>
           <div className="text-gray-700">{error}</div>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
             ลองใหม่อีกครั้ง
@@ -274,12 +274,12 @@ const Index = () => {
           <div className="flex justify-between items-center mb-6">
             <h3 id='messages' className="text-lg font-semibold text-gray-800">ข้อความล่าสุด</h3>
           </div>
-          
+
           {data.latestMessages?.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {data.latestMessages.map((msg, index) => (
-                <div 
-                  key={msg.id || msg.created_at || index} 
+                <div
+                  key={msg.id || msg.created_at || index}
                   className="py-4 hover:bg-gray-50 px-2 rounded transition-colors cursor-pointer"
                   onClick={() => {
                     if (msg.type === 'forum') {
@@ -289,9 +289,10 @@ const Index = () => {
                     }
                   }}
                 >
-                  <p className="font-medium text-gray-800">
-                    {(msg.answer_text || msg.comment || '').substring(0, 40)}...
-                  </p>
+                  <div className='h-12 overflow-hidden my-2'>
+                    <p className="font-medium text-gray-800" dangerouslySetInnerHTML={{ __html: (msg.answer_text || msg.comment || '') }} >
+                    </p>
+                  </div>
                   <p className="text-sm text-gray-500 mt-1 flex items-center">
                     <Calendar size={14} className="mr-1" />
                     {msg.created_at ? new Date(msg.created_at).toLocaleDateString('th-TH', {
@@ -320,7 +321,7 @@ const Index = () => {
               <ChevronRight size={16} className="ml-1" />
             </button>
           </div>
-          
+
           {data.latestActivities?.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {data.latestActivities.map((activity, index) => (

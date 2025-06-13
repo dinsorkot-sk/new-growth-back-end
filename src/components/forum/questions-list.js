@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, MessageCircle, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import Cookies from "js-cookie";
+import React, { Suspense } from "react";
+
+const QuillEditor = React.lazy(() => import("../quillEditor"));
 
 const QuestionsList = ({ questions, onUpdateAnswerStatus, onDeleteAnswer, onAddAnswer }) => {
     const searchParams = useSearchParams();
@@ -314,7 +317,7 @@ const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, 
                                             </button>
                                         </div>
                                     </div>
-                                    <p className="text-gray-700">{answer.text}</p>
+                                    <p className="ql-editor text-gray-700" dangerouslySetInnerHTML={{ __html: answer.text }}></p>
                                     {/* แสดงสถานะของคำตอบ */}
                                     <div className="mt-2">
                                         <span className={`text-xs px-2 py-1 rounded-full ${
@@ -368,13 +371,14 @@ const QuestionItem = ({ question, isLast, onUpdateAnswerStatus, onDeleteAnswer, 
                                     {replyError}
                                 </div>
                             )}
-                            <textarea
-                                value={replyText}
-                                onChange={(e) => setReplyText(e.target.value)}
-                                placeholder="พิมพ์คำตอบของคุณที่นี่..."
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                rows={3}
-                            />
+                            <div>
+                                <Suspense fallback={<div>Loading editor...</div>}>
+                                    <QuillEditor
+                                        value={replyText}
+                                        onChange={(value) => setReplyText(value)}
+                                    />
+                                </Suspense>
+                            </div>
                             <div className="flex justify-end">
                                 <button
                                     type="submit"
