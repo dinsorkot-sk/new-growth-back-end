@@ -14,17 +14,17 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const Detail = ({ image, onClose, onDelete, baseUrl }) => {
+const Detail = ({ image, onClose, onDelete, baseUrl, onRefresh }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [description, setDescription] = useState(image.description || "");
     const [isSaving, setIsSaving] = useState(false);
     const router = useRouter();
 
     // Add debug logs
-    console.log('Image data:', image);
-    console.log('Base URL:', baseUrl);
-    console.log('Image path:', image?.image_path);
-    console.log('Video path:', image?.files?.[0]?.file_path);
+    // console.log('Image data:', image);
+    // console.log('Base URL:', baseUrl);
+    // console.log('Image path:', image?.image_path);
+    // console.log('Video path:', image?.files?.[0]?.file_path);
 
     const [editData, setEditData] = useState({
         ref_id: image?.ref_id
@@ -54,35 +54,108 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
     };
 
     const handleDownload = () => {
-        // สร้าง URL ของไฟล์
-        const fileUrl = image.files ? `${baseUrl}/${image.files[0].file_path}` : `${baseUrl}/${image.image_path}`;
-        
-        // ใช้ fetch เพื่อดาวน์โหลดไฟล์เป็น Blob
-        fetch(fileUrl)
-            .then(response => response.blob())
-            .then(blob => {
-                // สร้าง URL ชั่วคราวสำหรับ Blob
-                const blobUrl = window.URL.createObjectURL(blob);
-                
-                // สร้าง element a สำหรับการดาวน์โหลด
+        try {
+            const token = Cookies.get("auth-token");
+            if (!token) {
+                router.push("/admin/login");
+                return;
+            }
+
+            const isVideo = !!image.files;
+            let downloadAsFileName = '';
+
+            if (isVideo) {
+                // Logic for video download using API endpoint
+                const downloadApiUrl = `${process.env.NEXT_PUBLIC_IMG}/api/video/downloadVideo/${image.id}`;
+                const originalFileNameWithExt = image.files[0].file_path.split('/').pop();
+                const fileExtension = originalFileNameWithExt.split('.').pop();
+                downloadAsFileName = `${image.title || originalFileNameWithExt.replace(/\.[^/.]+$/, "")}.${fileExtension}`;
+
                 const a = document.createElement('a');
-                a.href = blobUrl;
-                
-                // ตั้งชื่อไฟล์จากชื่อไฟล์
-                const fileName = image.files ? image.files[0].file_path.split('/').pop() : image.image_path.split('/').pop();
-                a.download = fileName;
-                
-                // เพิ่ม element เข้าไปใน DOM และคลิกเพื่อดาวน์โหลด
+                a.href = downloadApiUrl;
+                a.download = downloadAsFileName;
                 document.body.appendChild(a);
                 a.click();
-                
-                // ลบ element และเคลียร์ URL ชั่วคราว
                 document.body.removeChild(a);
-                window.URL.revokeObjectURL(blobUrl);
-            })
-            .catch(error => {
-                console.error('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์:', error);
-            });
+
+            } else {
+                // Logic for image download using Canvas
+                const fileUrl = `${baseUrl}/${image.image_path}`;
+                const originalFileNameWithExt = image.image_path.split('/').pop();
+                const fileExtension = originalFileNameWithExt.split('.').pop();
+                downloadAsFileName = `${image.title || originalFileNameWithExt.replace(/\.[^/.]+$/, "")}.${fileExtension}`;
+
+                console.log('กำลังดาวน์โหลดรูปภาพจาก:', fileUrl);
+
+                // Try direct download first
+                const a = document.createElement('a');
+                a.href = fileUrl;
+                a.download = downloadAsFileName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                // If direct download fails, try canvas method
+                const img = new window.Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = function() {
+                    try {
+                        console.log('รูปภาพโหลดเสร็จแล้ว, ขนาด:', img.width, 'x', img.height);
+                        
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        
+                        ctx.drawImage(img, 0, 0);
+                        
+                        canvas.toBlob(function(blob) {
+                            if (blob) {
+                                console.log('สร้าง blob เสร็จแล้ว, ขนาด:', blob.size, 'bytes');
+                                
+                                const blobUrl = window.URL.createObjectURL(blob);
+                                const downloadLink = document.createElement('a');
+                                
+                                downloadLink.href = blobUrl;
+                                downloadLink.download = downloadAsFileName;
+                                downloadLink.style.display = 'none';
+                                
+                                document.body.appendChild(downloadLink);
+                                downloadLink.click();
+                                
+                                setTimeout(() => {
+                                    if (document.body.contains(downloadLink)) {
+                                        document.body.removeChild(downloadLink);
+                                    }
+                                    window.URL.revokeObjectURL(blobUrl);
+                                }, 500);
+                            } else {
+                                console.error('ไม่สามารถสร้าง blob ได้');
+                                window.open(fileUrl, '_blank');
+                            }
+                        }, getMimeType(fileExtension), 0.95);
+                        
+                    } catch (canvasError) {
+                        console.error('Canvas Error:', canvasError);
+                        window.open(fileUrl, '_blank');
+                    }
+                };
+                
+                img.onerror = function(imgError) {
+                    console.error('Image Load Error:', imgError);
+                    window.open(fileUrl, '_blank');
+                };
+                
+                // Start loading the image
+                img.src = fileUrl;
+            }
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์:', error);
+            alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์ กรุณาลองใหม่อีกครั้ง');
+        }
     };
     
     const handleEdit = () => {
@@ -119,6 +192,9 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
             
             // Close edit mode
             setIsEditing(false);
+            
+            // Refresh data
+            onRefresh();
             
             // Show success message
             alert("บันทึกรายละเอียดเรียบร้อย");
