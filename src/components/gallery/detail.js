@@ -14,7 +14,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const Detail = ({ image, onClose, onDelete, baseUrl }) => {
+const Detail = ({ image, onClose, onDelete, baseUrl, onRefresh }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [description, setDescription] = useState(image.description || "");
     const [isSaving, setIsSaving] = useState(false);
@@ -192,6 +192,9 @@ const Detail = ({ image, onClose, onDelete, baseUrl }) => {
             
             // Close edit mode
             setIsEditing(false);
+            
+            // Refresh data
+            onRefresh();
             
             // Show success message
             alert("บันทึกรายละเอียดเรียบร้อย");

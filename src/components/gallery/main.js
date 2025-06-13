@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Search, Plus, Eye, Trash, Edit, X, Upload, MoreVertical, ChevronLeft, ChevronRight, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
 import Image from 'next/image';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+
 
 const Main = ({ 
     images, 
@@ -18,7 +21,8 @@ const Main = ({
     showAddModal,
     onAddImage,
     onCloseModal,
-    baseUrl
+    baseUrl,
+    onRefresh
 }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [newImage, setNewImage] = useState({
@@ -29,6 +33,8 @@ const Main = ({
     const [selectedFile, setSelectedFile] = useState(null);
     const [description, setDescription] = useState("");
     const [uploadType, setUploadType] = useState('image'); // 'image' or 'video'
+    const [uploadProgress, setUploadProgress] = useState(0); // Add upload progress state
+    const [isUploading, setIsUploading] = useState(false); // Add uploading state
     
     const filteredImages = images.filter(image => 
         // Only filter client-side if searching
@@ -61,7 +67,7 @@ const Main = ({
         }
     };
     
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
         if (!selectedFile) {
@@ -72,14 +78,82 @@ const Main = ({
             alert("กรุณากรอกรายละเอียด");
             return;
         }
+
+        const token = Cookies.get("auth-token");
+        setIsUploading(true); // Start uploading
+        setUploadProgress(0); // Reset progress
+
+        const formData = new FormData();
         
-        // Include the description in your newImage object
-        const mediaData = {
-            ...newImage,
-            description: description,
-        };
-        
-        onAddImage(mediaData, selectedFile, description, uploadType);
+        if (uploadType === 'video') {
+            formData.append("video_file", selectedFile);
+            formData.append("title", description);
+            formData.append("description", description);
+            formData.append("duration", "0");
+            formData.append("author", "cat");
+            formData.append("status", "show");
+            formData.append("is_downloadable", "false");
+            formData.append("uploadedFileName", selectedFile.name);
+
+            try {
+                await axios({
+                    method: "post",
+                    url: `${process.env.NEXT_PUBLIC_API}/video/upload-video`,
+                    data: formData,
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    onUploadProgress: (progressEvent) => {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setUploadProgress(percentCompleted);
+                    }
+                });
+                onRefresh();
+                onCloseModal();
+            } catch (error) {
+                console.error("Error uploading video:", error);
+                alert("เกิดข้อผิดพลาดในการอัพโหลดวิดีโอ");
+            } finally {
+                setIsUploading(false);
+                setUploadProgress(0);
+            }
+        } else {
+            // Handle image upload with progress
+            const mediaData = {
+                ...newImage,
+                description: description,
+            };
+            try {
+                const formData = new FormData();
+                formData.append('image', selectedFile);
+                formData.append('ref_type', refType);
+                formData.append('ref_id', mediaData.ref_id || null);
+                formData.append('description', description);
+
+                await axios.post(
+                    `${process.env.NEXT_PUBLIC_API}/image`,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${token}`
+                        },
+                        onUploadProgress: (progressEvent) => {
+                            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            setUploadProgress(percentCompleted);
+                        }
+                    }
+                );
+                onAddImage(mediaData, selectedFile, description, uploadType);
+                onCloseModal();
+            } catch (error) {
+                console.error("Error uploading image:", error);
+                alert("เกิดข้อผิดพลาดในการอัพโหลดรูปภาพ");
+            } finally {
+                setIsUploading(false);
+                setUploadProgress(0);
+            }
+        }
         
         // Reset form
         setNewImage({
@@ -88,7 +162,7 @@ const Main = ({
         });
         setSelectedFile(null);
         setDescription("");
-        setUploadType('image'); // Reset to image after submission
+        setUploadType('image');
     };
 
     const toggleMenu = (index) => {
@@ -488,21 +562,40 @@ const Main = ({
                                 </div>
                             </div>
                             
+                            {/* Upload Progress */}
+                            {isUploading && (
+                                <div className="mb-4">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-sm font-medium text-gray-700">
+                                            กำลังอัพโหลด... {uploadProgress}%
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div 
+                                            className="bg-green-500 h-2.5 rounded-full transition-all duration-300"
+                                            style={{ width: `${uploadProgress}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            )}
+                            
                             {/* Footer */}
                             <div className="flex justify-end space-x-3 mt-8">
                                 <button
                                     type="button"
                                     onClick={onCloseModal}
                                     className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                                    disabled={isUploading}
                                 >
                                     ยกเลิก
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleSubmit}
-                                    className="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium shadow-sm transition-colors"
+                                    className="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={isUploading}
                                 >
-                                    เพิ่มสื่อ
+                                    {isUploading ? 'กำลังอัพโหลด...' : 'เพิ่มสื่อ'}
                                 </button>
                             </div>
                         </div>

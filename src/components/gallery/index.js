@@ -230,6 +230,7 @@ const Index = ({ initialRefType = "vibe" }) => {
                     onClose={() => setSelectedImage(null)}
                     onDelete={handleDeleteImage}
                     baseUrl={`${process.env.NEXT_PUBLIC_IMG}`}
+                    onRefresh={fetchImages}
                 />
             ) : (
                 <Main 
@@ -250,6 +251,7 @@ const Index = ({ initialRefType = "vibe" }) => {
                     onCloseModal={() => setShowAddModal(false)}
                     baseUrl={`${process.env.NEXT_PUBLIC_IMG}`}
                     isEmpty={!loading && (!images || images.length === 0) && (!videos || videos.length === 0)}
+                    onRefresh={fetchImages}
                 />
             )}
         </div>
